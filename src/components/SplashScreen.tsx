@@ -126,13 +126,15 @@ const SplashScreen = ({ onComplete }: SplashScreenProps) => {
             noise={0.1}
             glow={0.5}
             transparent={true}
+            hueShift={-1.9} // Ensure saffron color via prop or rely on default in Prism component
+            colorFrequency={0.6} // Ensure adjusted frequency via prop or rely on default
           />
           {/* Rishi Image - Ensure rishi-yagya-loop.jpg is in public/assets/ */}
           <img
             src="/assets/rishi-yagya-loop.jpg" // Using the JPG file name
             alt="Rishi performing Yagya"
-            className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-16 h-16 md:w-20 md:h-20 object-contain pointer-events-none mix-blend-lighten rounded-full" // Blend mode might need adjustment for JPG
-            style={{ imageRendering: 'pixelated' }} // Optional: Keeps sharp edges if image is pixel art
+            className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-16 h-16 md:w-20 md:h-20 object-contain pointer-events-none rounded-full" // Removed blend mode
+            style={{ imageRendering: 'pixelated' }} // Optional: Keeps sharp edges
           />
         </div>
       </div>
