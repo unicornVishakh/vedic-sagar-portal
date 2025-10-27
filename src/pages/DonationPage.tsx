@@ -6,15 +6,13 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Banner } from "@/components/ui/banner";
-import { Heart, Send, ArrowRight, Sparkles } from "lucide-react";
+import { Heart, Send } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 
 const DonationPage = () => {
   const { data: gallery, isLoading: galleryLoading } = useGallery();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [showBanner, setShowBanner] = useState(true);
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -56,36 +54,8 @@ const DonationPage = () => {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      {/* Announcement Banner */}
-      <div className="mb-8">
-        <Banner
-          show={showBanner}
-          onHide={() => setShowBanner(false)}
-          variant="gradient"
-          size="lg"
-          title="Support Vedic Knowledge & Culture"
-          description="Your donations help preserve ancient wisdom and build modern solutions for the community"
-          showShade={true}
-          closable={true}
-          icon={<Sparkles className="w-6 h-6 text-primary" />}
-          action={
-            <Button
-              onClick={() => {
-                const donateSection = document.getElementById('donate');
-                donateSection?.scrollIntoView({ behavior: 'smooth' });
-              }}
-              className="inline-flex items-center gap-1 rounded-md bg-primary text-primary-foreground px-4 py-2 text-sm font-medium transition-colors hover:bg-primary/90"
-              size="sm"
-            >
-              Donate Now
-              <ArrowRight className="h-4 w-4" />
-            </Button>
-          }
-        />
-      </div>
-
       {/* Donation Section */}
-      <section id="donate" className="mb-16 scroll-mt-20">
+      <section id="donate" className="mb-16">
         <div className="flex items-center justify-center gap-3 mb-8">
           <Heart className="w-8 h-8 text-primary" />
           <h1 className="text-3xl md:text-4xl font-bold text-primary">Support Our Mission</h1>
