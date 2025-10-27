@@ -20,7 +20,7 @@ const bannerVariants = cva(
         premium:
           'bg-gradient-to-r from-purple-50 to-pink-50 border-purple-200 text-purple-900 dark:from-purple-900/20 dark:to-pink-900/20 dark:border-purple-800 dark:text-purple-100',
         gradient:
-          'bg-gradient-to-r from-primary/10 to-accent/10 border-primary/20 text-foreground',
+          'bg-gradient-to-r from-primary to-accent border-primary text-primary-foreground',
       },
       size: {
         default: 'py-1.5 px-2.5',

@@ -1,56 +1,10 @@
-import { useState } from "react";
 import { useGallery } from "@/hooks/useSupabaseQuery";
-import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Heart, Send } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
-import { toast } from "@/hooks/use-toast";
+import { Heart } from "lucide-react";
 
 const DonationPage = () => {
   const { data: gallery, isLoading: galleryLoading } = useGallery();
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [formData, setFormData] = useState({
-    firstName: "",
-    lastName: "",
-    email: "",
-    subject: "",
-    message: "",
-  });
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-
-    try {
-      const { error } = await supabase.from("contact_submissions").insert([{
-        name: `${formData.firstName} ${formData.lastName}`.trim(),
-        email: formData.email,
-        subject: formData.subject,
-        message: formData.message,
-      }]);
-
-      if (error) throw error;
-
-      toast({
-        title: "Message sent!",
-        description: "Thank you for reaching out. We'll get back to you soon.",
-      });
-
-      setFormData({ firstName: "", lastName: "", email: "", subject: "", message: "" });
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to send message. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -156,107 +110,6 @@ const DonationPage = () => {
         </div>
       </section>
 
-      {/* Contact Section */}
-      <section id="contact" className="scroll-mt-20 py-16">
-        <div className="container">
-          <div className="mx-auto flex max-w-screen-xl flex-col justify-between gap-10 lg:flex-row lg:gap-20">
-            <div className="mx-auto flex max-w-sm flex-col justify-between gap-10">
-              <div className="text-center lg:text-left">
-                <h1 className="mb-2 text-5xl font-semibold lg:mb-1 lg:text-6xl text-primary">
-                  Contact Us
-                </h1>
-                <p className="text-muted-foreground">
-                  We are available for questions, feedback, or collaboration opportunities. Let us know how we can help!
-                </p>
-              </div>
-              <div className="mx-auto w-fit lg:mx-0">
-                <h3 className="mb-6 text-center text-2xl font-semibold lg:text-left">
-                  Contact Details
-                </h3>
-                <ul className="ml-4 list-disc space-y-2">
-                  <li>
-                    <span className="font-bold">Phone: </span>
-                    +91 XXXXX XXXXX
-                  </li>
-                  <li>
-                    <span className="font-bold">Email: </span>
-                    <a href="mailto:contact@aryasamaj.org" className="underline">
-                      contact@aryasamaj.org
-                    </a>
-                  </li>
-                  <li>
-                    <span className="font-bold">Purpose: </span>
-                    Advertisements, suggestions, improvements, and contributions
-                  </li>
-                </ul>
-              </div>
-            </div>
-            <div className="mx-auto flex max-w-screen-md flex-col gap-6 rounded-lg border p-10 bg-card">
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="flex gap-4">
-                  <div className="grid w-full items-center gap-1.5">
-                    <Label htmlFor="firstname">First Name *</Label>
-                    <Input
-                      type="text"
-                      id="firstname"
-                      placeholder="First Name"
-                      required
-                      value={formData.firstName}
-                      onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
-                    />
-                  </div>
-                  <div className="grid w-full items-center gap-1.5">
-                    <Label htmlFor="lastname">Last Name</Label>
-                    <Input
-                      type="text"
-                      id="lastname"
-                      placeholder="Last Name"
-                      value={formData.lastName}
-                      onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
-                    />
-                  </div>
-                </div>
-                <div className="grid w-full items-center gap-1.5">
-                  <Label htmlFor="email">Email *</Label>
-                  <Input
-                    type="email"
-                    id="email"
-                    placeholder="Email"
-                    required
-                    value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  />
-                </div>
-                <div className="grid w-full items-center gap-1.5">
-                  <Label htmlFor="subject">Subject</Label>
-                  <Input
-                    type="text"
-                    id="subject"
-                    placeholder="Subject"
-                    value={formData.subject}
-                    onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
-                  />
-                </div>
-                <div className="grid w-full gap-1.5">
-                  <Label htmlFor="message">Message *</Label>
-                  <Textarea
-                    placeholder="Type your message here."
-                    id="message"
-                    required
-                    rows={5}
-                    value={formData.message}
-                    onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                  />
-                </div>
-                <Button type="submit" className="w-full" disabled={isSubmitting}>
-                  <Send className="w-4 h-4 mr-2" />
-                  {isSubmitting ? "Sending..." : "Send Message"}
-                </Button>
-              </form>
-            </div>
-          </div>
-        </div>
-      </section>
     </div>
   );
 };
