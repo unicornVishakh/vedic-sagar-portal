@@ -15,24 +15,19 @@ const BhajanList = () => {
       </div>
 
       {isLoading ? (
-        <div className="space-y-2">
-          {[...Array(5)].map((_, i) => (
-            <Skeleton key={i} className="h-16 w-full" />
+        <div className="space-y-3">
+          {[...Array(8)].map((_, i) => (
+            <Skeleton key={i} className="h-14 w-full" />
           ))}
         </div>
       ) : (
-        <div className="space-y-2 max-w-4xl mx-auto">
+        <div className="space-y-3 max-w-4xl mx-auto">
           {bhajans?.map((bhajan) => (
             <Link key={bhajan.bhajan_id} to={`/bhajan/${bhajan.bhajan_id}`}>
-              <Card className="hover:shadow-md transition-all hover:border-primary/50">
-                <CardContent className="p-3 flex items-center justify-between">
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-base truncate">{bhajan.title}</h3>
-                    {bhajan.author && (
-                      <p className="text-xs text-muted-foreground truncate">by {bhajan.author}</p>
-                    )}
-                  </div>
-                  <Music className="w-4 h-4 text-muted-foreground ml-3 flex-shrink-0" />
+              <Card className="hover:shadow-md transition-all hover:border-primary/50 hover:bg-accent/50 cursor-pointer">
+                <CardContent className="p-4 flex items-center justify-between">
+                  <h3 className="font-medium text-base">{bhajan.title}</h3>
+                  <Music className="w-5 h-5 text-primary ml-3 flex-shrink-0" />
                 </CardContent>
               </Card>
             </Link>
