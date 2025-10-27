@@ -9,15 +9,23 @@ const Index = () => {
   const location = useLocation();
 
   useEffect(() => {
-    // Only show splash on the root path "/"
-    if (location.pathname === "/") {
+    // Check if splash has been shown in this session
+    const hasShownSplash = sessionStorage.getItem("splashShown");
+    
+    // Only show splash on the root path "/" and if not shown before in this session
+    if (location.pathname === "/" && !hasShownSplash) {
       setShowSplash(true);
+      sessionStorage.setItem("splashShown", "true");
+      
       const timer = setTimeout(() => {
         setShowSplash(false);
         navigate("/home", { replace: true });
       }, 4000);
 
       return () => clearTimeout(timer);
+    } else if (location.pathname === "/") {
+      // If splash already shown, redirect directly to home
+      navigate("/home", { replace: true });
     }
   }, [location.pathname, navigate]);
 

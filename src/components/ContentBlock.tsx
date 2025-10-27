@@ -43,13 +43,13 @@ const ContentBlock = ({ section }: ContentBlockProps) => {
   return (
     <Link to={getLink(section)}>
       <Card className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border-2 hover:border-primary/50 bg-card h-full">
-        <CardContent className="flex flex-col items-center justify-center p-6 text-center h-full min-h-[200px]">
-          <div className="mb-4 text-primary group-hover:scale-110 transition-transform duration-300">
+        <CardContent className="flex flex-col items-center justify-center p-5 text-center h-full min-h-[160px]">
+          <div className="mb-3 text-primary group-hover:scale-110 transition-transform duration-300">
             {getIcon(section.content_type)}
           </div>
-          <h3 className="text-xl font-bold mb-2 text-foreground">{section.title}</h3>
+          <h3 className="text-lg font-bold mb-1 text-foreground">{section.title}</h3>
           {section.description && (
-            <p className="text-sm text-muted-foreground line-clamp-2">{section.description}</p>
+            <p className="text-xs text-muted-foreground line-clamp-2">{section.description}</p>
           )}
         </CardContent>
       </Card>

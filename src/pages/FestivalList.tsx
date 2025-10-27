@@ -8,28 +8,28 @@ const FestivalList = () => {
   const { data: festivals, isLoading } = useFestivals();
 
   return (
-    <div className="container mx-auto px-4 py-12">
-      <div className="flex items-center justify-center gap-3 mb-8">
+    <div className="container mx-auto px-4 py-8">
+      <div className="flex items-center justify-center gap-3 mb-6">
         <Calendar className="w-8 h-8 text-primary" />
         <h1 className="text-3xl md:text-4xl font-bold text-primary">Tyohar Mantra Kosh</h1>
       </div>
 
       {isLoading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {[...Array(6)].map((_, i) => (
-            <Skeleton key={i} className="h-32 w-full" />
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+          {[...Array(8)].map((_, i) => (
+            <Skeleton key={i} className="h-24 w-full" />
           ))}
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-w-5xl mx-auto">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 max-w-6xl mx-auto">
           {festivals?.map((festival) => (
             <Link key={festival.festival_id} to={`/festival/${festival.festival_id}`}>
               <Card className="hover:shadow-md transition-all hover:border-primary/50 h-full">
-                <CardContent className="p-6 flex flex-col items-center justify-center text-center h-full min-h-[120px]">
-                  <Calendar className="w-6 h-6 text-primary mb-3" />
-                  <h3 className="font-bold text-lg mb-2">{festival.name}</h3>
+                <CardContent className="p-4 flex flex-col items-center justify-center text-center h-full min-h-[100px]">
+                  <Calendar className="w-5 h-5 text-primary mb-2" />
+                  <h3 className="font-bold text-sm leading-tight">{festival.name}</h3>
                   {festival.description && (
-                    <p className="text-sm text-muted-foreground line-clamp-2">
+                    <p className="text-xs text-muted-foreground line-clamp-2 mt-1">
                       {festival.description}
                     </p>
                   )}
