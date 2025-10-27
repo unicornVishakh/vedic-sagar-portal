@@ -36,7 +36,7 @@ const DonateFormPage = () => {
     setIsSubmitting(true);
 
     try {
-      const { error } = await supabase.from("donations").insert([{
+      const { error } = await supabase.from("donations" as any).insert([{
         donor_name: `${formData.firstName} ${formData.lastName}`.trim(),
         email: formData.email,
         phone: formData.phone,
@@ -50,7 +50,7 @@ const DonateFormPage = () => {
         country: formData.country,
         pan_number: formData.panNumber,
         message: formData.message,
-      }]);
+      }] as any);
 
       if (error) throw error;
 
