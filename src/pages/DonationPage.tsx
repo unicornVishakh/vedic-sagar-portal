@@ -56,15 +56,32 @@ const DonationPage = () => {
         </div>
 
         <Card className="max-w-4xl mx-auto mb-12">
-          <CardContent className="p-8 text-center">
-            <p className="text-lg mb-6">
-              Your generous donations help us preserve and spread Vedic knowledge, organize community
-              events, and maintain this digital platform for seekers of truth.
-            </p>
-            <Button size="lg" className="bg-primary hover:bg-primary/90">
-              <Heart className="w-4 h-4 mr-2" />
-              Donate Now
-            </Button>
+          <CardContent className="p-8">
+            <div className="space-y-6 text-center">
+              <p className="text-lg leading-relaxed">
+                Your generous donations help us preserve and spread Vedic knowledge, organize community
+                events, and maintain this digital platform for seekers of truth.
+              </p>
+              
+              <div className="bg-muted/50 p-6 rounded-lg">
+                <h3 className="text-xl font-semibold mb-4 text-primary">Our Vision</h3>
+                <div className="text-left space-y-3 text-muted-foreground">
+                  <p>Going forward, we would add various other Vedic Rituals, Vedas, and other books to the app.</p>
+                  <p>Provide a store for people to easily buy havan samagri and religious books.</p>
+                  <p>Making it a one-stop app for all puja, havan needs, resources, and knowledge.</p>
+                  <p>And add more functionalities like community events, doorstep pandit services, and creating our own payment systems like Vedic Pay, which everyone can use to make payments just like Google Pay.</p>
+                </div>
+              </div>
+
+              <p className="text-lg font-medium text-primary">
+                Please join us in our initiative to make our Vedic community more stronger and organized like never before.
+              </p>
+
+              <Button size="lg" className="bg-primary hover:bg-primary/90">
+                <Heart className="w-4 h-4 mr-2" />
+                Donate Now
+              </Button>
+            </div>
           </CardContent>
         </Card>
 
@@ -108,9 +125,8 @@ const DonationPage = () => {
         <Card className="max-w-2xl mx-auto">
           <CardHeader>
             <CardTitle className="text-center">Get in Touch</CardTitle>
-            <p className="text-center text-muted-foreground">
-              We'd love to hear from you. Please share your thoughts, questions, or how you'd like
-              to contribute to our mission.
+            <p className="text-center text-muted-foreground mb-4">
+              Reach out to us for in-app advertisements, suggestions, improvements, and to contribute in our mission.
             </p>
           </CardHeader>
           <CardContent>

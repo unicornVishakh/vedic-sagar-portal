@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 
 interface SplashScreenProps {
-  onComplete: () => void;
+  onComplete?: () => void;
 }
 
 const SplashScreen = ({ onComplete }: SplashScreenProps) => {
@@ -10,7 +10,9 @@ const SplashScreen = ({ onComplete }: SplashScreenProps) => {
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsVisible(false);
-      setTimeout(onComplete, 500); // Wait for fade out
+      if (onComplete) {
+        setTimeout(onComplete, 500); // Wait for fade out
+      }
     }, 3500);
 
     return () => clearTimeout(timer);

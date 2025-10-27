@@ -35,7 +35,7 @@ const getLink = (section: ContentBlockProps["section"]) => {
     case "STATIC_PAGE":
       return `/page/${section.link_key}`;
     default:
-      return "/";
+      return "/home";
   }
 };
 

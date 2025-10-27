@@ -9,13 +9,13 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation();
 
   const navItems = [
-    { label: "Home", path: "/" },
+    { label: "Home", path: "/home" },
     { label: "Donate", path: "/donation" },
     { label: "Reach Out", path: "/donation#contact" },
   ];
 
   const NavLinks = ({ mobile = false }: { mobile?: boolean }) => (
-    <nav className={`flex ${mobile ? "flex-col" : "flex-col md:flex-row"} gap-2`}>
+    <nav className={`flex ${mobile ? "flex-col" : "flex-row"} gap-2`}>
       {navItems.map((item) => (
         <Link
           key={item.path}
@@ -62,22 +62,22 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
         </div>
       </header>
 
-      {/* Desktop Sidebar */}
-      <aside className="hidden md:block fixed left-0 top-0 h-screen w-64 border-r bg-sidebar">
-        <div className="flex flex-col h-full p-6">
-          <div className="flex-1">
-            <h1 className="text-xl font-bold text-primary mb-8">Vedic Knowledge</h1>
-            <NavLinks />
+      {/* Desktop Header */}
+      <header className="hidden md:block sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="container mx-auto px-6 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <img src="/placeholder.svg" alt="Logo" className="w-10 h-10" />
+            <h1 className="text-xl font-bold text-primary">Vedic Knowledge</h1>
           </div>
-          <div className="pb-4">
-            <img src="/placeholder.svg" alt="Logo" className="w-20 h-20 mx-auto" />
-          </div>
+          <NavLinks />
         </div>
-      </aside>
+      </header>
 
       {/* Main Content */}
-      <main className="flex-1 md:ml-64 w-full">
-        {children}
+      <main className="flex-1 w-full flex flex-col">
+        <div className="flex-1">
+          {children}
+        </div>
         
         {/* Footer */}
         <footer className="mt-auto border-t bg-muted/30 py-6">
