@@ -11,7 +11,6 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
   const navItems = [
     { label: "Home", path: "/home" },
     { label: "Donate", path: "/donation" },
-    { label: "Reach Out", path: "/donation#contact" },
   ];
 
   const NavLinks = ({ mobile = false }: { mobile?: boolean }) => (
