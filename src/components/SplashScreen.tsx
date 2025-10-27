@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { ChevronRight } from "lucide-react";
+import Prism from '@/components/ui/prism'; // Import the Prism component
 
 interface SplashScreenProps {
   onComplete?: () => void;
@@ -12,139 +13,182 @@ const SplashScreen = ({ onComplete }: SplashScreenProps) => {
   const [isDragging, setIsDragging] = useState(false);
   const [progress, setProgress] = useState(0);
 
+  // Detect mobile view on mount and resize
   useEffect(() => {
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 768);
     };
-    
     checkMobile();
     window.addEventListener("resize", checkMobile);
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
+  // Memoized version of handleComplete
+  const handleComplete = useCallback(() => {
+    setIsVisible(false);
+    if (onComplete) {
+      setTimeout(onComplete, 500); // Delay matches fade-out duration
+    }
+  }, [onComplete]);
+
+  // Handle desktop loading bar progress and auto-completion
   useEffect(() => {
     if (!isMobile) {
-      // Desktop: Auto-progress loading bar
       const interval = setInterval(() => {
         setProgress((prev) => {
           if (prev >= 100) {
             clearInterval(interval);
-            handleComplete();
+            handleComplete(); // Call completion handler
             return 100;
           }
-          return prev + 2;
+          return prev + 2; // Increment progress
         });
-      }, 60); // Complete in ~3 seconds
+      }, 60); // Adjust interval timing as needed (~3 seconds total)
 
-      return () => clearInterval(interval);
+      return () => clearInterval(interval); // Cleanup interval on unmount
     }
-  }, [isMobile]);
+  }, [isMobile, handleComplete]); // Include handleComplete in dependencies
 
-  const handleComplete = () => {
-    setIsVisible(false);
-    if (onComplete) {
-      setTimeout(onComplete, 500);
-    }
-  };
-
+  // Handle slider movement for mobile
   const handleSliderMove = (clientX: number) => {
     if (!isDragging) return;
-    
+
     const slider = document.getElementById("splash-slider");
     if (!slider) return;
-    
+
     const rect = slider.getBoundingClientRect();
-    const maxWidth = rect.width - 60; // Subtract button width
-    const newPosition = Math.max(0, Math.min(clientX - rect.left - 30, maxWidth));
-    
+    const maxWidth = rect.width - 60; // Slider width minus handle width
+    const newPosition = Math.max(0, Math.min(clientX - rect.left - 30, maxWidth)); // Calculate new position within bounds
+
     setSliderPosition(newPosition);
-    
-    if (newPosition >= maxWidth * 0.9) {
-      handleComplete();
+
+    // Trigger completion if slider reaches near the end
+    if (newPosition >= maxWidth * 0.95) {
+      setIsDragging(false); // Stop dragging
+      handleComplete(); // Call completion handler
     }
   };
 
-  const handleMouseDown = () => setIsDragging(true);
+  // Start dragging on mouse down or touch start
+  const handleMouseDown = (e: React.MouseEvent | React.TouchEvent) => {
+      e.preventDefault(); // Prevent text selection during drag
+      setIsDragging(true);
+  };
+
+  // Stop dragging and potentially reset slider on mouse up, leave, or touch end
   const handleMouseUp = () => {
-    setIsDragging(false);
-    if (sliderPosition < 200) {
-      setSliderPosition(0);
+    if (isDragging) {
+      setIsDragging(false);
+      const slider = document.getElementById("splash-slider");
+      const maxWidth = slider ? slider.getBoundingClientRect().width - 60 : 200; // Recalculate maxWidth safely
+       // Check if completion threshold was met *before* resetting
+       if (sliderPosition < maxWidth * 0.95) {
+         // Use setTimeout to allow visual completion before snapping back
+         setTimeout(() => setSliderPosition(0), 50);
+       }
     }
   };
 
+  // Handle touch movement
   const handleTouchMove = (e: React.TouchEvent) => {
     if (isDragging) {
       handleSliderMove(e.touches[0].clientX);
     }
   };
 
+  // Handle mouse movement (only when dragging)
   const handleMouseMove = (e: React.MouseEvent) => {
-    handleSliderMove(e.clientX);
+     if (isDragging) { // Ensure dragging has started
+        handleSliderMove(e.clientX);
+     }
   };
 
   return (
     <div
       className={`fixed inset-0 z-50 flex flex-col items-center justify-between bg-gradient-to-b from-background to-white px-6 py-12 transition-opacity duration-500 ${
-        isVisible ? "opacity-100" : "opacity-0"
+        isVisible ? "opacity-100" : "opacity-0 pointer-events-none" // Fade out and disable interaction when hidden
       }`}
-      onMouseMove={handleMouseMove}
-      onMouseUp={handleMouseUp}
-      onTouchEnd={handleMouseUp}
     >
-      <div className="flex-1 flex items-center justify-center">
+      {/* Top Section: Om Symbol */}
+      <div className="flex-1 flex items-center justify-center pt-8"> {/* Added padding top */}
         <h1 className="text-8xl md:text-9xl font-bold text-primary">ॐ</h1>
       </div>
 
-      <div className="flex-1 flex items-center justify-center">
-        <div className="w-full max-w-md aspect-video rounded-lg overflow-hidden shadow-2xl">
+      {/* Middle Section: Prism with Rishi Image */}
+      <div className="flex-1 flex items-center justify-center w-full max-w-xs px-4"> {/* Added padding */}
+        <div className="w-48 h-48 md:w-64 md:h-64 aspect-square relative"> {/* Container size */}
+          <Prism
+            animationType="rotate" // Use simple Y-axis rotation
+            timeScale={0.3}        // Rotation speed
+            height={1.2}           // Adjusted height
+            baseWidth={1.8}        // Adjusted base width
+            scale={1.8}            // Adjusted scale
+            noise={0.1}
+            glow={0.5}
+            transparent={true}
+          />
+          {/* Rishi Image - Ensure rishi-yagya-loop.jpg is in public/assets/ */}
           <img
-            src="https://images.unsplash.com/photo-1604608672516-f1b9b1f36a4f?w=800&auto=format&fit=crop"
-            alt="Sacred Yagya"
-            className="w-full h-full object-cover"
+            src="/assets/rishi-yagya-loop.jpg" // Using the JPG file name
+            alt="Rishi performing Yagya"
+            className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-16 h-16 md:w-20 md:h-20 object-contain pointer-events-none mix-blend-lighten rounded-full" // Blend mode might need adjustment for JPG
+            style={{ imageRendering: 'pixelated' }} // Optional: Keeps sharp edges if image is pixel art
           />
         </div>
       </div>
 
-      {isMobile ? (
-        <div className="w-full max-w-md px-4 mb-8">
+      {/* Bottom Section: Slider or Loading Bar */}
+      <div className="w-full max-w-md px-4 mb-6"> {/* Reduced bottom margin */}
+        {isMobile ? (
           <div
             id="splash-slider"
-            className="relative h-16 bg-secondary/20 rounded-full overflow-hidden"
+            className="relative h-16 bg-secondary/20 rounded-full overflow-hidden cursor-grab active:cursor-grabbing select-none" // Added select-none
+             onMouseUp={handleMouseUp}
+             onMouseLeave={handleMouseUp} // Reset if mouse leaves slider
+             onTouchEnd={handleMouseUp}
+             // MouseMove is handled by the handle below
           >
+            {/* Background fill */}
             <div
-              className="absolute inset-y-0 left-0 bg-primary/20 rounded-full transition-all"
+              className="absolute inset-y-0 left-0 bg-primary/30 rounded-full transition-width duration-100 ease-linear" // Use transition-width
               style={{ width: `${sliderPosition + 60}px` }}
             />
+             {/* Draggable Handle */}
             <div
-              className="absolute inset-y-0 left-0 flex items-center justify-center w-16 h-16 bg-primary rounded-full cursor-pointer shadow-lg transition-transform active:scale-95"
+              className="absolute inset-y-0 left-0 flex items-center justify-center w-16 h-16 bg-primary rounded-full shadow-lg transition-transform duration-100 ease-linear active:scale-95"
               style={{ transform: `translateX(${sliderPosition}px)` }}
               onMouseDown={handleMouseDown}
               onTouchStart={handleMouseDown}
               onTouchMove={handleTouchMove}
+              onMouseMove={handleMouseMove} // Handle mouse move specifically on the handle
             >
               <ChevronRight className="w-8 h-8 text-primary-foreground" />
             </div>
+             {/* Text Label */}
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <span className="text-sm font-medium text-muted-foreground">
+              <span
+                 className="text-sm font-medium text-muted-foreground transition-opacity duration-200"
+                 style={{ opacity: sliderPosition > 10 ? 0 : 1 }} // Fade out text as slider moves
+              >
                 Slide to Enter
               </span>
             </div>
           </div>
-        </div>
-      ) : (
-        <div className="w-full max-w-md px-4 mb-8">
+        ) : (
+           // Desktop Loading Bar
           <div className="h-2 bg-secondary/20 rounded-full overflow-hidden">
             <div
               className="h-full bg-primary transition-all duration-300 ease-linear"
               style={{ width: `${progress}%` }}
             />
           </div>
-        </div>
-      )}
+        )}
+      </div>
 
-      <div className="flex flex-col items-center justify-center gap-4">
-        <h2 className="text-4xl md:text-5xl font-bold text-secondary">आर्य समाज</h2>
-        <p className="text-sm text-muted-foreground">Built and Maintained by Neural AI</p>
+       {/* Footer Text */}
+      <div className="flex flex-col items-center justify-center gap-1 pb-4"> {/* Reduced gap, added padding bottom */}
+        <h2 className="text-3xl md:text-4xl font-bold text-secondary">आर्य समाज</h2>
+        <p className="text-xs text-muted-foreground">Built and Maintained by Neural AI</p>
       </div>
     </div>
   );
