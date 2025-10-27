@@ -30,7 +30,7 @@ const BhajanDetail = () => {
 
   return (
     <>
-      <div className="min-h-screen flex flex-col pb-24">
+      <div className="min-h-screen flex flex-col pb-32">
         <div className="container mx-auto px-4 py-6">
           <Link to="/bhajans">
             <Button variant="ghost" className="mb-4">
@@ -61,11 +61,13 @@ const BhajanDetail = () => {
         </div>
       </div>
 
-      {/* Fixed Audio Player */}
-      <AudioPlayer 
-        audioUrl={(bhajan as any).audio_url} 
-        title={bhajan.title} 
-      />
+      {/* Fixed Audio Player - positioned above footer */}
+      <div className="pb-16">
+        <AudioPlayer 
+          audioUrl={(bhajan as any).audio_url} 
+          title={bhajan.title} 
+        />
+      </div>
     </>
   );
 };
