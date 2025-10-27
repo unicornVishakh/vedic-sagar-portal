@@ -1,6 +1,5 @@
 import { useParams, Link } from "react-router-dom";
 import { useStaticPage } from "@/hooks/useSupabaseQuery";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
@@ -29,28 +28,31 @@ const StaticPage = () => {
   }
 
   return (
-    <div className="container mx-auto px-4 py-12">
-      <Link to="/">
-        <Button variant="ghost" className="mb-6">
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Back to Home
-        </Button>
-      </Link>
+    <div className="min-h-screen flex flex-col">
+      <div className="container mx-auto px-4 py-6">
+        <Link to="/home">
+          <Button variant="ghost" className="mb-4">
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back to Home
+          </Button>
+        </Link>
+      </div>
 
-      <Card className="max-w-4xl mx-auto">
-        <CardHeader>
-          <CardTitle className="text-2xl md:text-3xl text-center text-primary">
+      {/* Title Banner */}
+      <div className="bg-gradient-to-r from-primary/10 to-secondary/10 border-y">
+        <div className="container mx-auto px-4 py-8">
+          <h1 className="text-2xl md:text-3xl font-bold text-center text-primary">
             {page.title}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="prose prose-lg max-w-none">
-            <pre className="whitespace-pre-wrap font-sans text-base leading-relaxed">
-              {page.content}
-            </pre>
-          </div>
-        </CardContent>
-      </Card>
+          </h1>
+        </div>
+      </div>
+
+      {/* Content Body */}
+      <div className="flex-1 container mx-auto px-4 py-8 max-w-4xl">
+        <pre className="whitespace-pre-wrap font-sans text-base leading-relaxed">
+          {page.content}
+        </pre>
+      </div>
     </div>
   );
 };

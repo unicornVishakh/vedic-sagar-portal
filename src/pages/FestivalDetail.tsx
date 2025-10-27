@@ -1,6 +1,5 @@
 import { useParams, Link } from "react-router-dom";
 import { useFestivalMantras, useFestivals } from "@/hooks/useSupabaseQuery";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Calendar } from "lucide-react";
@@ -32,27 +31,34 @@ const FestivalDetail = () => {
   }
 
   return (
-    <div className="container mx-auto px-4 py-12">
-      <Link to="/festivals">
-        <Button variant="ghost" className="mb-6">
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Back to Festivals
-        </Button>
-      </Link>
+    <div className="min-h-screen flex flex-col">
+      <div className="container mx-auto px-4 py-6">
+        <Link to="/festivals">
+          <Button variant="ghost" className="mb-4">
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back to Festivals
+          </Button>
+        </Link>
+      </div>
 
-      <Card className="max-w-4xl mx-auto">
-        <CardHeader>
-          <div className="flex items-center justify-center gap-3">
+      {/* Title Banner */}
+      <div className="bg-gradient-to-r from-primary/10 to-secondary/10 border-y">
+        <div className="container mx-auto px-4 py-8">
+          <div className="flex items-center justify-center gap-3 mb-2">
             <Calendar className="w-6 h-6 text-primary" />
-            <CardTitle className="text-2xl md:text-3xl text-center">
+            <h1 className="text-2xl md:text-3xl font-bold text-center">
               {festival?.name || "Festival"} Mantras
-            </CardTitle>
+            </h1>
           </div>
           {festival?.description && (
             <p className="text-center text-muted-foreground mt-2">{festival.description}</p>
           )}
-        </CardHeader>
-        <CardContent className="space-y-6">
+        </div>
+      </div>
+
+      {/* Content Body */}
+      <div className="flex-1 container mx-auto px-4 py-8 max-w-4xl">
+        <div className="space-y-6">
           {mantras.map((mantra) => (
             <div key={mantra.mantra_id} className="border-l-4 border-primary pl-4 py-2">
               {mantra.purpose && (
@@ -63,8 +69,8 @@ const FestivalDetail = () => {
               </pre>
             </div>
           ))}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 };

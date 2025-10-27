@@ -1,6 +1,5 @@
 import { useParams, Link } from "react-router-dom";
 import { useBhajan } from "@/hooks/useSupabaseQuery";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Music } from "lucide-react";
@@ -29,32 +28,35 @@ const BhajanDetail = () => {
   }
 
   return (
-    <div className="container mx-auto px-4 py-12">
-      <Link to="/bhajans">
-        <Button variant="ghost" className="mb-6">
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Back to Bhajans
-        </Button>
-      </Link>
+    <div className="min-h-screen flex flex-col">
+      <div className="container mx-auto px-4 py-6">
+        <Link to="/bhajans">
+          <Button variant="ghost" className="mb-4">
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back to Bhajans
+          </Button>
+        </Link>
+      </div>
 
-      <Card className="max-w-3xl mx-auto">
-        <CardHeader className="space-y-4">
-          <div className="flex items-center justify-center gap-3">
+      {/* Title Banner */}
+      <div className="bg-gradient-to-r from-primary/10 to-secondary/10 border-y">
+        <div className="container mx-auto px-4 py-8">
+          <div className="flex items-center justify-center gap-3 mb-2">
             <Music className="w-6 h-6 text-primary" />
-            <CardTitle className="text-2xl md:text-3xl text-center">{bhajan.title}</CardTitle>
+            <h1 className="text-2xl md:text-3xl font-bold text-center">{bhajan.title}</h1>
           </div>
           {bhajan.author && (
             <p className="text-center text-muted-foreground">by {bhajan.author}</p>
           )}
-        </CardHeader>
-        <CardContent>
-          <div className="prose prose-lg max-w-none">
-            <pre className="whitespace-pre-wrap font-sans text-base leading-relaxed">
-              {bhajan.lyrics}
-            </pre>
-          </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
+
+      {/* Content Body */}
+      <div className="flex-1 container mx-auto px-4 py-8 max-w-4xl">
+        <pre className="whitespace-pre-wrap font-sans text-base leading-relaxed">
+          {bhajan.lyrics}
+        </pre>
+      </div>
     </div>
   );
 };
