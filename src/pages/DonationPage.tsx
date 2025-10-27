@@ -1,20 +1,23 @@
 import { useState } from "react";
 import { useGallery } from "@/hooks/useSupabaseQuery";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Heart, Send } from "lucide-react";
+import { Banner } from "@/components/ui/banner";
+import { Heart, Send, ArrowRight, Sparkles } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 
 const DonationPage = () => {
   const { data: gallery, isLoading: galleryLoading } = useGallery();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showBanner, setShowBanner] = useState(true);
   const [formData, setFormData] = useState({
-    name: "",
+    firstName: "",
+    lastName: "",
     email: "",
     subject: "",
     message: "",
@@ -25,7 +28,12 @@ const DonationPage = () => {
     setIsSubmitting(true);
 
     try {
-      const { error } = await supabase.from("contact_submissions").insert([formData]);
+      const { error } = await supabase.from("contact_submissions").insert([{
+        name: `${formData.firstName} ${formData.lastName}`.trim(),
+        email: formData.email,
+        subject: formData.subject,
+        message: formData.message,
+      }]);
 
       if (error) throw error;
 
@@ -34,7 +42,7 @@ const DonationPage = () => {
         description: "Thank you for reaching out. We'll get back to you soon.",
       });
 
-      setFormData({ name: "", email: "", subject: "", message: "" });
+      setFormData({ firstName: "", lastName: "", email: "", subject: "", message: "" });
     } catch (error) {
       toast({
         title: "Error",
@@ -47,9 +55,37 @@ const DonationPage = () => {
   };
 
   return (
-    <div className="container mx-auto px-4 py-12">
+    <div className="container mx-auto px-4 py-8">
+      {/* Announcement Banner */}
+      <div className="mb-8">
+        <Banner
+          show={showBanner}
+          onHide={() => setShowBanner(false)}
+          variant="gradient"
+          size="lg"
+          title="Support Vedic Knowledge & Culture"
+          description="Your donations help preserve ancient wisdom and build modern solutions for the community"
+          showShade={true}
+          closable={true}
+          icon={<Sparkles className="w-6 h-6 text-primary" />}
+          action={
+            <Button
+              onClick={() => {
+                const donateSection = document.getElementById('donate');
+                donateSection?.scrollIntoView({ behavior: 'smooth' });
+              }}
+              className="inline-flex items-center gap-1 rounded-md bg-primary text-primary-foreground px-4 py-2 text-sm font-medium transition-colors hover:bg-primary/90"
+              size="sm"
+            >
+              Donate Now
+              <ArrowRight className="h-4 w-4" />
+            </Button>
+          }
+        />
+      </div>
+
       {/* Donation Section */}
-      <section className="mb-16">
+      <section id="donate" className="mb-16 scroll-mt-20">
         <div className="flex items-center justify-center gap-3 mb-8">
           <Heart className="w-8 h-8 text-primary" />
           <h1 className="text-3xl md:text-4xl font-bold text-primary">Support Our Mission</h1>
@@ -116,69 +152,105 @@ const DonationPage = () => {
       </section>
 
       {/* Contact Section */}
-      <section id="contact" className="scroll-mt-20">
-        <div className="flex items-center justify-center gap-3 mb-8">
-          <Send className="w-8 h-8 text-primary" />
-          <h1 className="text-3xl md:text-4xl font-bold text-primary">Reach Out To Us</h1>
+      <section id="contact" className="scroll-mt-20 py-16">
+        <div className="container">
+          <div className="mx-auto flex max-w-screen-xl flex-col justify-between gap-10 lg:flex-row lg:gap-20">
+            <div className="mx-auto flex max-w-sm flex-col justify-between gap-10">
+              <div className="text-center lg:text-left">
+                <h1 className="mb-2 text-5xl font-semibold lg:mb-1 lg:text-6xl text-primary">
+                  Contact Us
+                </h1>
+                <p className="text-muted-foreground">
+                  We are available for questions, feedback, or collaboration opportunities. Let us know how we can help!
+                </p>
+              </div>
+              <div className="mx-auto w-fit lg:mx-0">
+                <h3 className="mb-6 text-center text-2xl font-semibold lg:text-left">
+                  Contact Details
+                </h3>
+                <ul className="ml-4 list-disc space-y-2">
+                  <li>
+                    <span className="font-bold">Phone: </span>
+                    +91 XXXXX XXXXX
+                  </li>
+                  <li>
+                    <span className="font-bold">Email: </span>
+                    <a href="mailto:contact@aryasamaj.org" className="underline">
+                      contact@aryasamaj.org
+                    </a>
+                  </li>
+                  <li>
+                    <span className="font-bold">Purpose: </span>
+                    Advertisements, suggestions, improvements, and contributions
+                  </li>
+                </ul>
+              </div>
+            </div>
+            <div className="mx-auto flex max-w-screen-md flex-col gap-6 rounded-lg border p-10 bg-card">
+              <form onSubmit={handleSubmit} className="space-y-6">
+                <div className="flex gap-4">
+                  <div className="grid w-full items-center gap-1.5">
+                    <Label htmlFor="firstname">First Name *</Label>
+                    <Input
+                      type="text"
+                      id="firstname"
+                      placeholder="First Name"
+                      required
+                      value={formData.firstName}
+                      onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+                    />
+                  </div>
+                  <div className="grid w-full items-center gap-1.5">
+                    <Label htmlFor="lastname">Last Name</Label>
+                    <Input
+                      type="text"
+                      id="lastname"
+                      placeholder="Last Name"
+                      value={formData.lastName}
+                      onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+                    />
+                  </div>
+                </div>
+                <div className="grid w-full items-center gap-1.5">
+                  <Label htmlFor="email">Email *</Label>
+                  <Input
+                    type="email"
+                    id="email"
+                    placeholder="Email"
+                    required
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  />
+                </div>
+                <div className="grid w-full items-center gap-1.5">
+                  <Label htmlFor="subject">Subject</Label>
+                  <Input
+                    type="text"
+                    id="subject"
+                    placeholder="Subject"
+                    value={formData.subject}
+                    onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
+                  />
+                </div>
+                <div className="grid w-full gap-1.5">
+                  <Label htmlFor="message">Message *</Label>
+                  <Textarea
+                    placeholder="Type your message here."
+                    id="message"
+                    required
+                    rows={5}
+                    value={formData.message}
+                    onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                  />
+                </div>
+                <Button type="submit" className="w-full" disabled={isSubmitting}>
+                  <Send className="w-4 h-4 mr-2" />
+                  {isSubmitting ? "Sending..." : "Send Message"}
+                </Button>
+              </form>
+            </div>
+          </div>
         </div>
-
-        <Card className="max-w-2xl mx-auto">
-          <CardHeader>
-            <CardTitle className="text-center">Get in Touch</CardTitle>
-            <p className="text-center text-muted-foreground mb-4">
-              Reach out to us for in-app advertisements, suggestions, improvements, and to contribute in our mission.
-            </p>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <Label htmlFor="name">Name *</Label>
-                <Input
-                  id="name"
-                  required
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="email">Email *</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  required
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="subject">Subject</Label>
-                <Input
-                  id="subject"
-                  value={formData.subject}
-                  onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="message">Message *</Label>
-                <Textarea
-                  id="message"
-                  required
-                  rows={5}
-                  value={formData.message}
-                  onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                />
-              </div>
-
-              <Button type="submit" className="w-full" disabled={isSubmitting}>
-                <Send className="w-4 h-4 mr-2" />
-                {isSubmitting ? "Sending..." : "Send Message"}
-              </Button>
-            </form>
-          </CardContent>
-        </Card>
       </section>
     </div>
   );
