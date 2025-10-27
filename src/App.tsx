@@ -12,6 +12,7 @@ import FestivalList from "./pages/FestivalList";
 import FestivalDetail from "./pages/FestivalDetail";
 import StaticPage from "./pages/StaticPage";
 import DonationPage from "./pages/DonationPage";
+import DonateFormPage from "./pages/DonateFormPage";
 
 const queryClient = new QueryClient();
 
@@ -30,6 +31,7 @@ const App = () => (
           <Route path="/festival/:id" element={<Layout><FestivalDetail /></Layout>} />
           <Route path="/page/:slug" element={<Layout><StaticPage /></Layout>} />
           <Route path="/donation" element={<Layout><DonationPage /></Layout>} />
+          <Route path="/donate-form" element={<Layout><DonateFormPage /></Layout>} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
