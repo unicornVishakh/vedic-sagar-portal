@@ -119,7 +119,7 @@ const SplashScreen = ({ onComplete }: SplashScreenProps) => {
         <div className="w-full h-full aspect-square relative flex items-center justify-center"> {/* Use full container size */}
           {/* Rishi Image - Ensure rishi-yagya-loop.jpg is in public/assets/ */}
           <img
-            src="/assets/rishi-yagya-loop.jpg" // Using the JPG file name
+            src="/assets/task_01k8m963hwfngaxjxj1nf2t5j7_1761617406_img_1.webp" // Using the JPG file name
             alt="Rishi performing Yagya"
             className="w-56 h-56 md:w-80 md:h-80 object-contain pointer-events-none rounded-full" // Increased size significantly
             style={{ imageRendering: 'pixelated' }} // Optional: Keeps sharp edges
