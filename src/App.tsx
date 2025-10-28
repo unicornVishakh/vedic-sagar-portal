@@ -13,29 +13,32 @@ import FestivalDetail from "./pages/FestivalDetail";
 import StaticPage from "./pages/StaticPage";
 import DonationPage from "./pages/DonationPage";
 import DonateFormPage from "./pages/DonateFormPage";
+import ClickSpark from "./components/ClickSpark";
 
 const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/home" element={<Layout><Index /></Layout>} />
-          <Route path="/bhajans" element={<Layout><BhajanList /></Layout>} />
-          <Route path="/bhajan/:id" element={<Layout><BhajanDetail /></Layout>} />
-          <Route path="/festivals" element={<Layout><FestivalList /></Layout>} />
-          <Route path="/festival/:id" element={<Layout><FestivalDetail /></Layout>} />
-          <Route path="/page/:slug" element={<Layout><StaticPage /></Layout>} />
-          <Route path="/donation" element={<Layout><DonationPage /></Layout>} />
-          <Route path="/donate-form" element={<Layout><DonateFormPage /></Layout>} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
+      <ClickSpark sparkColor="hsl(var(--primary))" sparkRadius={20} sparkCount={12}>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/home" element={<Layout><Index /></Layout>} />
+            <Route path="/bhajans" element={<Layout><BhajanList /></Layout>} />
+            <Route path="/bhajan/:id" element={<Layout><BhajanDetail /></Layout>} />
+            <Route path="/festivals" element={<Layout><FestivalList /></Layout>} />
+            <Route path="/festival/:id" element={<Layout><FestivalDetail /></Layout>} />
+            <Route path="/page/:slug" element={<Layout><StaticPage /></Layout>} />
+            <Route path="/donation" element={<Layout><DonationPage /></Layout>} />
+            <Route path="/donate-form" element={<Layout><DonateFormPage /></Layout>} />
+            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </ClickSpark>
     </TooltipProvider>
   </QueryClientProvider>
 );
