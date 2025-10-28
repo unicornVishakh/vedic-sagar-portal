@@ -23,32 +23,24 @@ const FestivalDetail = () => {
   };
 
   const generateSanskritAudio = async (text: string): Promise<string> => {
-    try {
-      const response = await fetch(
-        'https://ugoimceidzwjytznhwig.supabase.co/functions/v1/text-to-speech',
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ text }),
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error('Failed to generate audio');
+    return new Promise((resolve) => {
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = 'hi-IN'; // Hindi (India) for Sanskrit pronunciation
+      utterance.rate = 0.8; // Slower for clearer pronunciation
+      utterance.pitch = 1.0;
+      
+      // Try to find an Indian voice
+      const voices = window.speechSynthesis.getVoices();
+      const indianVoice = voices.find(voice => voice.lang.startsWith('hi')) || 
+                         voices.find(voice => voice.lang.startsWith('en-IN'));
+      
+      if (indianVoice) {
+        utterance.voice = indianVoice;
       }
-
-      const data = await response.json();
-      const audioBlob = new Blob(
-        [Uint8Array.from(atob(data.audioContent), c => c.charCodeAt(0))],
-        { type: 'audio/mpeg' }
-      );
-      return URL.createObjectURL(audioBlob);
-    } catch (error) {
-      console.error('Error generating audio:', error);
-      return "";
-    }
+      
+      window.speechSynthesis.speak(utterance);
+      resolve("speaking"); // Return a flag to indicate speaking
+    });
   };
 
   if (mantrasLoading) {
