@@ -26,60 +26,63 @@ const DonationPage = () => {
         <div className="flex flex-col items-center justify-center gap-6 mb-16">
           <div className="flex items-center gap-3">
             <Heart className="w-10 h-10 sm:w-12 sm:h-12 text-primary" />
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-primary text-center">Support Our Mission</h1>
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-primary text-center">Build the Future of Dharma, Today.</h1>
           </div>
           
           <div className="max-w-5xl mx-auto space-y-10">
             <p className="text-lg sm:text-xl md:text-2xl leading-relaxed text-center text-foreground/90 font-light">
-              Your generous contributions empower us to preserve ancient Vedic wisdom, develop cutting-edge digital platforms, 
-              and strengthen our community for generations to come.
+              Our heritage is timeless, but the way we share it must evolve. Your contribution fuels the innovation needed to build world-class digital platforms, ensuring Vedic wisdom not only survives but thrives in the modern world.
             </p>
             
             <div className="space-y-8">
               <div className="text-center">
-                <h2 className="text-2xl sm:text-3xl font-semibold mb-8 text-primary">Our Vision for the Future</h2>
+                <h2 className="text-2xl sm:text-3xl font-semibold mb-8 text-primary">What We're Building Next</h2>
               </div>
               
               <div className="grid gap-6 sm:gap-8 text-left max-w-4xl mx-auto">
                 <div className="flex gap-4 items-start">
                   <div className="flex-shrink-0 w-3 h-3 rounded-full bg-primary mt-2"></div>
-                  <p className="text-base sm:text-lg md:text-xl text-foreground/80 leading-relaxed">
-                    Expand our digital library with comprehensive collections of Vedic Rituals, sacred texts, and ancient scriptures, 
-                    making timeless knowledge accessible to seekers worldwide.
-                  </p>
+                  <div>
+                    <h3 className="text-lg sm:text-xl font-semibold mb-2 text-primary">The Digital Ashram</h3>
+                    <p className="text-base sm:text-lg md:text-xl text-foreground/80 leading-relaxed">
+                      An ever-growing library of sacred texts and rituals, open to anyone, anywhere in the world.
+                    </p>
+                  </div>
                 </div>
                 
                 <div className="flex gap-4 items-start">
                   <div className="flex-shrink-0 w-3 h-3 rounded-full bg-primary mt-2"></div>
-                  <p className="text-base sm:text-lg md:text-xl text-foreground/80 leading-relaxed">
-                    Establish a dedicated marketplace offering authentic havan samagri, religious books, and spiritual accessories, 
-                    ensuring quality and convenience for your religious practices.
-                  </p>
+                  <div>
+                    <h3 className="text-lg sm:text-xl font-semibold mb-2 text-primary">The Devotee's Marketplace</h3>
+                    <p className="text-base sm:text-lg md:text-xl text-foreground/80 leading-relaxed">
+                      A curated source for authentic spiritual goods—from havan samagri to rare books—delivered with modern convenience.
+                    </p>
+                  </div>
                 </div>
                 
                 <div className="flex gap-4 items-start">
                   <div className="flex-shrink-0 w-3 h-3 rounded-full bg-primary mt-2"></div>
-                  <p className="text-base sm:text-lg md:text-xl text-foreground/80 leading-relaxed">
-                    Create a comprehensive platform serving as your complete resource for pujas, havans, spiritual guidance, 
-                    and Vedic knowledge—all in one place.
-                  </p>
+                  <div>
+                    <h3 className="text-lg sm:text-xl font-semibold mb-2 text-primary">The Complete Spiritual Resource</h3>
+                    <p className="text-base sm:text-lg md:text-xl text-foreground/80 leading-relaxed">
+                      One platform to connect you with pujas, havans, and the deep Vedic knowledge you seek.
+                    </p>
+                  </div>
                 </div>
                 
                 <div className="flex gap-4 items-start">
                   <div className="flex-shrink-0 w-3 h-3 rounded-full bg-primary mt-2"></div>
-                  <p className="text-base sm:text-lg md:text-xl text-foreground/80 leading-relaxed">
-                    Develop innovative services including community event management, convenient doorstep pandit services, 
-                    and modern payment solutions like Vedic Pay—bringing traditional values into the digital age.
-                  </p>
+                  <div>
+                    <h3 className="text-lg sm:text-xl font-semibold mb-2 text-primary">Services for Modern Life</h3>
+                    <p className="text-base sm:text-lg md:text-xl text-foreground/80 leading-relaxed">
+                      We're innovating with on-demand pandit services, event management tools, and secure payment solutions to make practicing our traditions easier than ever.
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
 
             <div className="text-center py-8">
-              <p className="text-lg sm:text-xl md:text-2xl font-light text-foreground/90 mb-10 px-4">
-                Join us in building a stronger, more connected Vedic community—united in preserving our heritage 
-                and embracing the future.
-              </p>
 
               <Button 
                 size="lg" 
