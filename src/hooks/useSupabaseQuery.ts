@@ -111,3 +111,33 @@ export const useGallery = () => {
     },
   });
 };
+
+export const useEvents = () => {
+  return useQuery({
+    queryKey: ["events"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("events")
+        .select("*")
+        .order("start_time", { ascending: true });
+      
+      if (error) throw error;
+      return data;
+    },
+  });
+};
+
+export const useNews = () => {
+  return useQuery({
+    queryKey: ["news"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("news")
+        .select("*")
+        .order("published_at", { ascending: false });
+
+      if (error) throw error;
+      return data;
+    },
+  });
+};
