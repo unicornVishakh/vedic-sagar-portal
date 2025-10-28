@@ -35,21 +35,19 @@ const SplashScreen = ({ onComplete }: SplashScreenProps) => {
         await audioRef.play();
         setAudioStarted(true);
       } catch (error) {
-        // Autoplay blocked on mobile - will be started on user interaction
-        console.log("Audio autoplay prevented - waiting for user interaction");
+        // Autoplay may be blocked - will retry on user interaction
+        console.log("Audio autoplay prevented - will retry on interaction");
       }
     };
     
-    // Try to play on desktop (usually works)
-    if (!isMobile) {
-      playAudio();
-    }
+    // Attempt to play on both mobile and desktop
+    playAudio();
     
     return () => {
       audioRef.pause();
       audioRef.currentTime = 0;
     };
-  }, [audioRef, isMobile]);
+  }, [audioRef]);
 
   // Memoized version of handleComplete
   const handleComplete = useCallback(() => {
