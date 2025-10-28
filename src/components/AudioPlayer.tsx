@@ -1,17 +1,21 @@
 import { useRef, useState, useEffect } from "react";
-import { Play, Pause } from "lucide-react";
+import { Play, Pause, Volume2 } from "lucide-react";
 import { motion } from "framer-motion";
 
 interface AudioPlayerProps {
   audioUrl?: string;
   title: string;
+  speechUtterance?: SpeechSynthesisUtterance | null;
+  onSpeechEnd?: () => void;
 }
 
-const AudioPlayer = ({ audioUrl, title }: AudioPlayerProps) => {
+const AudioPlayer = ({ audioUrl, title, speechUtterance, onSpeechEnd }: AudioPlayerProps) => {
   const audioRef = useRef<HTMLAudioElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
+  const [isSpeechMode, setIsSpeechMode] = useState(false);
+  const speechProgressInterval = useRef<number>();
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -32,19 +36,85 @@ const AudioPlayer = ({ audioUrl, title }: AudioPlayerProps) => {
     };
   }, []);
 
-  const togglePlay = () => {
-    const audio = audioRef.current;
-    if (!audio) return;
+  // Handle speech synthesis
+  useEffect(() => {
+    if (speechUtterance) {
+      setIsSpeechMode(true);
+      setCurrentTime(0);
+      setDuration(0);
+      
+      const estimatedDuration = (speechUtterance.text.length / 10) * 1000; // Rough estimate
+      setDuration(estimatedDuration / 1000);
+      
+      const handleEnd = () => {
+        setIsPlaying(false);
+        setIsSpeechMode(false);
+        if (speechProgressInterval.current) {
+          clearInterval(speechProgressInterval.current);
+        }
+        onSpeechEnd?.();
+      };
 
-    if (isPlaying) {
-      audio.pause();
+      speechUtterance.onend = handleEnd;
+      speechUtterance.onerror = handleEnd;
+
+      return () => {
+        if (speechProgressInterval.current) {
+          clearInterval(speechProgressInterval.current);
+        }
+      };
     } else {
-      audio.play();
+      setIsSpeechMode(false);
     }
-    setIsPlaying(!isPlaying);
+  }, [speechUtterance, onSpeechEnd]);
+
+  const togglePlay = () => {
+    if (isSpeechMode && speechUtterance) {
+      if (isPlaying) {
+        // Pause speech
+        window.speechSynthesis.pause();
+        setIsPlaying(false);
+        if (speechProgressInterval.current) {
+          clearInterval(speechProgressInterval.current);
+        }
+      } else {
+        if (window.speechSynthesis.paused) {
+          // Resume speech
+          window.speechSynthesis.resume();
+        } else {
+          // Start speech
+          window.speechSynthesis.speak(speechUtterance);
+          setCurrentTime(0);
+        }
+        setIsPlaying(true);
+        
+        // Update progress during speech
+        speechProgressInterval.current = window.setInterval(() => {
+          setCurrentTime(prev => {
+            const next = prev + 0.1;
+            return next >= duration ? duration : next;
+          });
+        }, 100);
+      }
+    } else {
+      const audio = audioRef.current;
+      if (!audio) return;
+
+      if (isPlaying) {
+        audio.pause();
+      } else {
+        audio.play();
+      }
+      setIsPlaying(!isPlaying);
+    }
   };
 
   const handleSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (isSpeechMode) {
+      // Speech synthesis doesn't support seeking
+      return;
+    }
+    
     const audio = audioRef.current;
     if (!audio) return;
 
@@ -59,20 +129,8 @@ const AudioPlayer = ({ audioUrl, title }: AudioPlayerProps) => {
     return `${minutes}:${seconds.toString().padStart(2, "0")}`;
   };
 
-  if (!audioUrl) {
-    return (
-      <motion.div
-        initial={{ y: 100 }}
-        animate={{ y: 0 }}
-        className="fixed bottom-0 left-0 right-0 bg-card border-t shadow-lg z-50"
-      >
-        <div className="container mx-auto px-4 py-3">
-          <p className="text-sm text-muted-foreground text-center">
-            Audio not available for this bhajan
-          </p>
-        </div>
-      </motion.div>
-    );
+  if (!audioUrl && !speechUtterance) {
+    return null;
   }
 
   return (
@@ -82,7 +140,7 @@ const AudioPlayer = ({ audioUrl, title }: AudioPlayerProps) => {
       className="fixed bottom-0 left-0 right-0 bg-card border-t shadow-lg z-50"
     >
       <div className="container mx-auto px-4 py-3">
-        <audio ref={audioRef} src={audioUrl} preload="metadata" />
+        {audioUrl && <audio ref={audioRef} src={audioUrl} preload="metadata" />}
         
         <div className="flex flex-col gap-2">
           <div className="flex items-center gap-3">
@@ -98,20 +156,32 @@ const AudioPlayer = ({ audioUrl, title }: AudioPlayerProps) => {
               )}
             </button>
 
+            {isSpeechMode && (
+              <Volume2 className="w-4 h-4 text-primary animate-pulse" />
+            )}
+
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium truncate">{title}</p>
               <div className="flex items-center gap-2 mt-1">
                 <span className="text-xs text-muted-foreground">
                   {formatTime(currentTime)}
                 </span>
-                <input
-                  type="range"
-                  min="0"
-                  max={duration || 0}
-                  value={currentTime}
-                  onChange={handleSeek}
-                  className="flex-1 h-1 rounded-full appearance-none bg-muted cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-primary [&::-moz-range-thumb]:w-3 [&::-moz-range-thumb]:h-3 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-primary [&::-moz-range-thumb]:border-0"
-                />
+                <div className="flex-1 relative h-1 rounded-full bg-muted">
+                  <div 
+                    className="absolute h-full bg-primary rounded-full transition-all duration-100"
+                    style={{ width: `${duration > 0 ? (currentTime / duration) * 100 : 0}%` }}
+                  />
+                  {!isSpeechMode && (
+                    <input
+                      type="range"
+                      min="0"
+                      max={duration || 0}
+                      value={currentTime}
+                      onChange={handleSeek}
+                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                    />
+                  )}
+                </div>
                 <span className="text-xs text-muted-foreground">
                   {formatTime(duration)}
                 </span>

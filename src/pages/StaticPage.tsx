@@ -9,34 +9,33 @@ import AudioPlayer from "@/components/AudioPlayer";
 const StaticPage = () => {
   const { slug } = useParams<{ slug: string }>();
   const { data: page, isLoading } = useStaticPage(slug!);
-  const [currentAudio, setCurrentAudio] = useState<string | null>(null);
+  const [currentUtterance, setCurrentUtterance] = useState<SpeechSynthesisUtterance | null>(null);
   const [currentTitle, setCurrentTitle] = useState<string>("");
 
-  const handlePlayAudio = async (text: string, title: string) => {
+  const handlePlayAudio = (text: string, title: string) => {
+    window.speechSynthesis.cancel();
+    
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = 'hi-IN';
+    utterance.rate = 0.8;
+    utterance.pitch = 1;
+    
+    const voices = window.speechSynthesis.getVoices();
+    const indianVoice = voices.find(voice => 
+      voice.lang.startsWith('hi') || voice.lang.startsWith('sa')
+    );
+    
+    if (indianVoice) {
+      utterance.voice = indianVoice;
+    }
+    
+    setCurrentUtterance(utterance);
     setCurrentTitle(title);
-    const audioUrl = await generateSanskritAudio(text);
-    setCurrentAudio(audioUrl);
   };
 
-  const generateSanskritAudio = async (text: string): Promise<string> => {
-    return new Promise((resolve) => {
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = 'hi-IN'; // Hindi (India) for Sanskrit pronunciation
-      utterance.rate = 0.8; // Slower for clearer pronunciation
-      utterance.pitch = 1.0;
-      
-      // Try to find an Indian voice
-      const voices = window.speechSynthesis.getVoices();
-      const indianVoice = voices.find(voice => voice.lang.startsWith('hi')) || 
-                         voices.find(voice => voice.lang.startsWith('en-IN'));
-      
-      if (indianVoice) {
-        utterance.voice = indianVoice;
-      }
-      
-      window.speechSynthesis.speak(utterance);
-      resolve("speaking"); // Return a flag to indicate speaking
-    });
+  const handleSpeechEnd = () => {
+    setCurrentUtterance(null);
+    setCurrentTitle("");
   };
 
   if (isLoading) {
@@ -109,12 +108,12 @@ const StaticPage = () => {
       </div>
 
       {/* Fixed Audio Player */}
-      {currentAudio && (
-        <div className="fixed bottom-0 left-0 right-0 bg-background border-t shadow-lg z-50">
-          <div className="container mx-auto px-4 py-3">
-            <AudioPlayer audioUrl={currentAudio} title={currentTitle} />
-          </div>
-        </div>
+      {currentUtterance && (
+        <AudioPlayer 
+          speechUtterance={currentUtterance} 
+          title={currentTitle}
+          onSpeechEnd={handleSpeechEnd}
+        />
       )}
     </div>
   );
