@@ -13,6 +13,7 @@ const SplashScreen = ({ onComplete }: SplashScreenProps) => {
   const [isDragging, setIsDragging] = useState(false);
   const [progress, setProgress] = useState(0);
   const [audioRef] = useState(() => new Audio("/assets/ancient-spirit-echoes-om-chanting-234045.mp3"));
+  const [audioStarted, setAudioStarted] = useState(false);
 
   // Detect mobile view on mount and resize
   useEffect(() => {
@@ -24,7 +25,7 @@ const SplashScreen = ({ onComplete }: SplashScreenProps) => {
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
-  // Play OM chanting audio on mount and loop until completion
+  // Setup audio on mount
   useEffect(() => {
     audioRef.loop = true;
     audioRef.volume = 0.7;
@@ -32,18 +33,23 @@ const SplashScreen = ({ onComplete }: SplashScreenProps) => {
     const playAudio = async () => {
       try {
         await audioRef.play();
+        setAudioStarted(true);
       } catch (error) {
-        console.log("Audio autoplay prevented:", error);
+        // Autoplay blocked on mobile - will be started on user interaction
+        console.log("Audio autoplay prevented - waiting for user interaction");
       }
     };
     
-    playAudio();
+    // Try to play on desktop (usually works)
+    if (!isMobile) {
+      playAudio();
+    }
     
     return () => {
       audioRef.pause();
       audioRef.currentTime = 0;
     };
-  }, [audioRef]);
+  }, [audioRef, isMobile]);
 
   // Memoized version of handleComplete
   const handleComplete = useCallback(() => {
@@ -97,9 +103,19 @@ const SplashScreen = ({ onComplete }: SplashScreenProps) => {
   };
 
   // Start dragging on mouse down or touch start
-  const handleMouseDown = (e: React.MouseEvent | React.TouchEvent) => {
+  const handleMouseDown = async (e: React.MouseEvent | React.TouchEvent) => {
       e.preventDefault(); // Prevent text selection during drag
       setIsDragging(true);
+      
+      // Start audio on first user interaction (mobile)
+      if (!audioStarted && isMobile) {
+        try {
+          await audioRef.play();
+          setAudioStarted(true);
+        } catch (error) {
+          console.log("Failed to play audio:", error);
+        }
+      }
   };
 
   // Stop dragging and potentially reset slider on mouse up, leave, or touch end
