@@ -131,7 +131,7 @@ const SplashScreen = ({ onComplete }: SplashScreenProps) => {
           />
           {/* Rishi Image - Ensure rishi-yagya-loop.jpg is in public/assets/ */}
           <img
-            src="/assets/rishi-yagya-loop.jpg" // Using the JPG file name
+            src="/assets/task_01k8m963hwfngaxjxj1nf2t5j7_1761617406_img_1.webp" // Using the JPG file name
             alt="Rishi performing Yagya"
             className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-16 h-16 md:w-20 md:h-20 object-contain pointer-events-none rounded-full" // Removed blend mode
             style={{ imageRendering: 'pixelated' }} // Optional: Keeps sharp edges
