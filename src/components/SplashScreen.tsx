@@ -23,6 +23,57 @@ const SplashScreen = ({ onComplete }: SplashScreenProps) => {
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
+  // Play OM chant once on mount
+  useEffect(() => {
+    const playOmChant = () => {
+      if ('speechSynthesis' in window) {
+        // Wait for voices to load
+        const voices = window.speechSynthesis.getVoices();
+        
+        const speakOm = () => {
+          window.speechSynthesis.cancel();
+          
+          const utterance = new SpeechSynthesisUtterance("ॐ");
+          utterance.lang = 'hi-IN'; // Sanskrit/Hindi
+          utterance.rate = 0.5; // Very slow for spiritual effect
+          utterance.pitch = 0.8; // Lower pitch for depth
+          utterance.volume = 1;
+          
+          // Try to find an Indian voice for authentic pronunciation
+          const voices = window.speechSynthesis.getVoices();
+          const indianVoice = voices.find(voice => 
+            voice.lang.startsWith('hi') || 
+            voice.lang.startsWith('sa') ||
+            voice.lang.startsWith('en-IN')
+          );
+          
+          if (indianVoice) {
+            utterance.voice = indianVoice;
+          }
+          
+          window.speechSynthesis.speak(utterance);
+        };
+
+        if (voices.length > 0) {
+          speakOm();
+        } else {
+          // Wait for voices to load
+          window.speechSynthesis.onvoiceschanged = () => {
+            speakOm();
+          };
+        }
+      }
+    };
+
+    // Small delay to ensure everything is loaded
+    const timer = setTimeout(playOmChant, 300);
+    
+    return () => {
+      clearTimeout(timer);
+      window.speechSynthesis.cancel();
+    };
+  }, []);
+
   // Memoized version of handleComplete
   const handleComplete = useCallback(() => {
     setIsVisible(false);
