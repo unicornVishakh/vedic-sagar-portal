@@ -49,6 +49,18 @@ const SplashScreen = ({ onComplete }: SplashScreenProps) => {
     };
   }, [audioRef]);
 
+  // Handle audio playback on first user interaction (for mobile)
+  const handleScreenInteraction = async () => {
+    if (!audioStarted) {
+      try {
+        await audioRef.play();
+        setAudioStarted(true);
+      } catch (error) {
+        console.log("Failed to play audio:", error);
+      }
+    }
+  };
+
   // Memoized version of handleComplete
   const handleComplete = useCallback(() => {
     // Stop audio when completing
@@ -101,19 +113,9 @@ const SplashScreen = ({ onComplete }: SplashScreenProps) => {
   };
 
   // Start dragging on mouse down or touch start
-  const handleMouseDown = async (e: React.MouseEvent | React.TouchEvent) => {
+  const handleMouseDown = (e: React.MouseEvent | React.TouchEvent) => {
       e.preventDefault(); // Prevent text selection during drag
       setIsDragging(true);
-      
-      // Start audio on first user interaction (mobile)
-      if (!audioStarted && isMobile) {
-        try {
-          await audioRef.play();
-          setAudioStarted(true);
-        } catch (error) {
-          console.log("Failed to play audio:", error);
-        }
-      }
   };
 
   // Stop dragging and potentially reset slider on mouse up, leave, or touch end
@@ -149,6 +151,8 @@ const SplashScreen = ({ onComplete }: SplashScreenProps) => {
       className={`fixed inset-0 z-50 flex flex-col items-center justify-between bg-gradient-to-b from-background to-white px-6 py-12 transition-opacity duration-500 ${
         isVisible ? "opacity-100" : "opacity-0 pointer-events-none" // Fade out and disable interaction when hidden
       }`}
+      onClick={handleScreenInteraction}
+      onTouchStart={handleScreenInteraction}
     >
       {/* Top Section: Om Symbol Image */}
       <div className="flex-1 flex items-center justify-center pt-8">

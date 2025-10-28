@@ -58,7 +58,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
             </SheetContent>
           </Sheet>
 
-          <h1 className="text-lg font-bold text-primary">Arya Ved</h1>
+          <h1 className="text-lg font-bold text-primary">Veda Vogue</h1>
 
           <div className="w-10" /> {/* Spacer for centering */}
         </div>
@@ -74,7 +74,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
               className="w-12 h-12"
             />
             <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-              Arya Ved
+              Veda Vogue
             </h1>
           </div>
           <NavLinks />
