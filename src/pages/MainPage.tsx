@@ -3,7 +3,7 @@ import { useContentSections } from "@/hooks/useSupabaseQuery";
 import { Skeleton } from "@/components/ui/skeleton";
 import { MinimalistHero } from "@/components/ui/minimalist-hero";
 import { Facebook, Instagram, Twitter, Youtube } from "lucide-react";
-import sageImage from "@/assets/sage-meditation-new.jpg";
+import sageImage from "@/assets/sage-meditation.png";
 
 const MainPage = () => {
   const { data: sections, isLoading } = useContentSections();
