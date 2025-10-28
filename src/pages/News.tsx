@@ -3,7 +3,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { User, Calendar, Link as LinkIcon } from "lucide-react";
-import ContentRenderer from "../lib/content-parser";
 
 const News = () => {
   const { data: news, isLoading } = useNews();
@@ -52,10 +51,7 @@ const News = () => {
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <ContentRenderer 
-                      text={article.content} 
-                      className="text-muted-foreground" 
-                    />
+                    <p className="text-muted-foreground whitespace-pre-wrap">{article.content}</p>
                     {article.link && (
                       <div className="mt-4">
                         <a href={article.link} target="_blank" rel="noopener noreferrer">
