@@ -1,7 +1,8 @@
 import { useId, useRef, useState, useEffect } from "react";
 import { useBhajans } from "@/hooks/useSupabaseQuery";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Music, Play, X } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Music, Play, X, Search } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useOutsideClick } from "@/hooks/use-outside-click";
 import { useNavigate } from "react-router-dom";
@@ -9,6 +10,7 @@ import { useNavigate } from "react-router-dom";
 const BhajanList = () => {
   const { data: bhajans, isLoading } = useBhajans();
   const [active, setActive] = useState<any | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
   const ref = useRef<HTMLDivElement>(null);
   const id = useId();
   const navigate = useNavigate();
@@ -36,6 +38,12 @@ const BhajanList = () => {
     setActive(null);
     navigate(`/bhajan/${bhajanId}`);
   };
+
+  const filteredBhajans = bhajans?.filter(
+    (bhajan) =>
+      bhajan.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      bhajan.author?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   return (
     <>
@@ -127,6 +135,17 @@ const BhajanList = () => {
           <h1 className="text-3xl md:text-4xl font-bold text-primary">Bhajan Kosh</h1>
         </div>
 
+        <div className="relative max-w-md mx-auto mb-8">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+          <Input
+            type="search"
+            placeholder="Search for a bhajan..."
+            className="w-full pl-10"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </div>
+
         {isLoading ? (
           <div className="space-y-3">
             {[...Array(8)].map((_, i) => (
@@ -135,7 +154,7 @@ const BhajanList = () => {
           </div>
         ) : (
           <ul className="max-w-4xl mx-auto w-full space-y-3">
-            {bhajans?.map((bhajan) => (
+            {filteredBhajans?.map((bhajan) => (
               <motion.div
                 layoutId={`card-${bhajan.bhajan_id}-${id}`}
                 key={`card-${bhajan.bhajan_id}-${id}`}
