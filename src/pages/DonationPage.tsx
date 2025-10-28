@@ -93,34 +93,6 @@ const DonationPage = () => {
           </div>
         </div>
 
-        {/* Gallery */}
-        <div className="mt-20">
-          <h2 className="text-3xl font-bold text-center mb-12 text-primary">Our Work</h2>
-          {galleryLoading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {[...Array(6)].map((_, i) => (
-                <Skeleton key={i} className="h-72 w-full rounded-lg" />
-              ))}
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {gallery?.map((photo) => (
-                <div key={photo.photo_id} className="group relative overflow-hidden rounded-lg shadow-lg">
-                  <img
-                    src={photo.image_url}
-                    alt={photo.caption || "Gallery image"}
-                    className="w-full h-72 object-cover transition-transform duration-300 group-hover:scale-105"
-                  />
-                  {photo.caption && (
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-6">
-                      <p className="text-white text-base font-light">{photo.caption}</p>
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
       </section>
 
       {/* Contact Us Section */}

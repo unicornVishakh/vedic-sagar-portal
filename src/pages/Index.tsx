@@ -16,21 +16,19 @@ const Index = () => {
     if (location.pathname === "/" && !hasShownSplash) {
       setShowSplash(true);
       sessionStorage.setItem("splashShown", "true");
-      
-      const timer = setTimeout(() => {
-        setShowSplash(false);
-        navigate("/home", { replace: true });
-      }, 4000);
-
-      return () => clearTimeout(timer);
     } else if (location.pathname === "/") {
       // If splash already shown, redirect directly to home
       navigate("/home", { replace: true });
     }
   }, [location.pathname, navigate]);
 
+  const handleSplashComplete = () => {
+    setShowSplash(false);
+    navigate("/home", { replace: true });
+  };
+
   if (showSplash && location.pathname === "/") {
-    return <SplashScreen />;
+    return <SplashScreen onComplete={handleSplashComplete} />;
   }
 
   return <MainPage />;
