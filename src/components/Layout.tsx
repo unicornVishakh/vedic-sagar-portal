@@ -43,14 +43,17 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
                 {open ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
               </Button>
             </SheetTrigger>
-            <SheetContent side="left" className="w-64">
-              <div className="flex flex-col h-full">
-                <div className="flex-1 py-6">
-                  <NavLinks mobile />
-                </div>
-                <div className="pb-6">
-                  <img src="/placeholder.svg" alt="Logo" className="w-16 h-16 mx-auto" />
-                </div>
+            <SheetContent side="left" className="w-64 flex flex-col"> {/* Added flex flex-col */}
+              <div className="flex-1 py-6">
+                <NavLinks mobile />
+              </div>
+              {/* Large Logo at the bottom */}
+              <div className="mt-auto pb-6 flex justify-center"> {/* Added mt-auto and flex justify-center */}
+                <img
+                  src="/assets/download.png" // Use the Arya Samaj logo image
+                  alt="Arya Samaj Logo"
+                  className="w-32 h-auto" // Increased size
+                />
               </div>
             </SheetContent>
           </Sheet>
@@ -65,7 +68,11 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
       <header className="hidden md:block sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <img src="/placeholder.svg" alt="Logo" className="w-10 h-10" />
+            <img
+              src="/assets/download.png" // Use the Arya Samaj logo image on desktop too
+              alt="Arya Samaj Logo"
+              className="w-10 h-10"
+            />
             <h1 className="text-xl font-bold text-primary">Vedic Knowledge</h1>
           </div>
           <NavLinks />
@@ -77,7 +84,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
         <div className="flex-1">
           {children}
         </div>
-        
+
         {/* Footer */}
         <footer className="mt-auto border-t bg-muted/30 py-6">
           <div className="container mx-auto px-4 text-center">
