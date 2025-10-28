@@ -109,9 +109,13 @@ const SplashScreen = ({ onComplete }: SplashScreenProps) => {
         isVisible ? "opacity-100" : "opacity-0 pointer-events-none" // Fade out and disable interaction when hidden
       }`}
     >
-      {/* Top Section: Om Symbol */}
-      <div className="flex-1 flex items-center justify-center pt-8"> {/* Added padding top */}
-        <h1 className="text-8xl md:text-9xl font-bold text-primary">ॐ</h1>
+      {/* Top Section: Om Symbol Image */}
+      <div className="flex-1 flex items-center justify-center pt-8">
+        <img
+          src="/assets/O3m_AryaSamaj.png" // Use the Ohm image
+          alt="Ohm Symbol"
+          className="h-24 w-auto md:h-32" // Adjust size as needed
+        />
       </div>
 
       {/* Middle Section: Rishi Image */}
@@ -176,8 +180,12 @@ const SplashScreen = ({ onComplete }: SplashScreenProps) => {
       </div>
 
        {/* Footer Text */}
-      <div className="flex flex-col items-center justify-center gap-1 pb-4"> {/* Reduced gap, added padding bottom */}
-        <h2 className="text-3xl md:text-4xl font-bold text-secondary">आर्य समाज</h2>
+      <div className="flex flex-col items-center justify-center gap-2 pb-4"> {/* Adjusted gap */}
+        <img
+            src="/assets/download.png" // Use the Arya Samaj logo image
+            alt="Arya Samaj Logo"
+            className="h-10 w-auto md:h-12 mb-1" // Adjust size and add margin-bottom
+        />
         <p className="text-xs text-muted-foreground">Built and Maintained by Neural AI</p>
       </div>
     </div>
