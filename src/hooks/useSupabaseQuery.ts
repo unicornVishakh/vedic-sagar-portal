@@ -112,6 +112,23 @@ export const useGallery = () => {
   });
 };
 
+export const useEvent = (id: string) => {
+  return useQuery({
+    queryKey: ["event", id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("events")
+        .select("*")
+        .eq("id", Number(id))
+        .single();
+      
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!id,
+  });
+};
+
 export const useEvents = () => {
   return useQuery({
     queryKey: ["events"],
