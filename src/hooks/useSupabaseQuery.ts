@@ -112,18 +112,39 @@ export const useGallery = () => {
   });
 };
 
+// Manual type definitions for tables not in auto-generated types
+interface Event {
+  id: number;
+  title: string;
+  description: string | null;
+  start_time: string;
+  end_time: string | null;
+  location: string | null;
+  image_url: string | null;
+  created_at: string;
+}
+
+interface NewsItem {
+  id: number;
+  title: string;
+  content: string | null;
+  author: string | null;
+  published_at: string;
+  image_url: string | null;
+}
+
 export const useEvent = (id: string) => {
   return useQuery({
     queryKey: ["event", id],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from("events")
         .select("*")
         .eq("id", Number(id))
         .single();
       
       if (error) throw error;
-      return data;
+      return data as Event;
     },
     enabled: !!id,
   });
@@ -133,13 +154,13 @@ export const useEvents = () => {
   return useQuery({
     queryKey: ["events"],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from("events")
         .select("*")
         .order("start_time", { ascending: true });
       
       if (error) throw error;
-      return data;
+      return data as Event[];
     },
   });
 };
@@ -148,13 +169,13 @@ export const useNews = () => {
   return useQuery({
     queryKey: ["news"],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from("news")
         .select("*")
         .order("published_at", { ascending: false });
 
       if (error) throw error;
-      return data;
+      return data as NewsItem[];
     },
   });
 };
