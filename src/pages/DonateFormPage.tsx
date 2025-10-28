@@ -72,7 +72,7 @@ const DonateFormPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-muted/20 py-8 px-4">
+    <div className="min-h-screen py-8 px-4">
       <div className="container max-w-4xl mx-auto">
         <Button
           variant="ghost"
@@ -83,23 +83,23 @@ const DonateFormPage = () => {
           Back to Donation Page
         </Button>
 
-        <Card className="shadow-lg">
-          <CardHeader className="text-center space-y-4 pb-8">
+        <div className="space-y-8">
+          <div className="text-center space-y-4 pb-8">
             <div className="flex justify-center">
               <div className="bg-primary/10 p-4 rounded-full">
                 <Heart className="w-12 h-12 text-primary" />
               </div>
             </div>
-            <CardTitle className="text-3xl md:text-4xl font-bold text-primary">
+            <h1 className="text-3xl md:text-4xl font-bold text-primary">
               Make a Donation
-            </CardTitle>
-            <CardDescription className="text-base md:text-lg">
+            </h1>
+            <p className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto">
               Your contribution helps preserve Vedic knowledge and strengthen our community. 
               All donations are tax-deductible under Section 80G of the Income Tax Act.
-            </CardDescription>
-          </CardHeader>
+            </p>
+          </div>
 
-          <CardContent className="px-6 md:px-10">
+          <div className="space-y-8">
             <form onSubmit={handleSubmit} className="space-y-8">
               {/* Personal Information */}
               <div className="space-y-4">
@@ -325,8 +325,8 @@ const DonateFormPage = () => {
                 </p>
               </div>
             </form>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
     </div>
   );

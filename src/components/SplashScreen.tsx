@@ -47,6 +47,7 @@ const SplashScreen = ({ onComplete }: SplashScreenProps) => {
 
       return () => clearInterval(interval); // Cleanup interval on unmount
     }
+    // Note: No auto-completion on mobile - user must slide
   }, [isMobile, handleComplete]); // Include handleComplete in dependencies
 
   // Handle slider movement for mobile
