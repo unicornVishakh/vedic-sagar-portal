@@ -16,11 +16,14 @@ const MainPage = () => {
     <div className="min-h-screen">
       {/* Banner with integrated announcement */}
       <div className="w-full h-64 md:h-96 overflow-hidden relative">
-        <img
-          src="https://images.unsplash.com/photo-1582510003544-4d00b7f74220?w=1600&auto=format&fit=crop"
-          alt="Vedic Knowledge Banner"
+        <video
+          src="/assets/Satyug_Yagya_Cinematic_Masterpiece.mp4"
+          autoPlay
+          loop
+          muted
           className="w-full h-full object-cover"
         />
+        <div className="absolute inset-0 bg-black/30" />
         {showBanner && (
           <div className="absolute top-4 left-0 right-0 px-2 sm:px-4 z-10">
             <Banner
@@ -31,7 +34,7 @@ const MainPage = () => {
               description="Help us preserve and share Vedic knowledge with the world"
               showShade={true}
               closable={true}
-              icon={<Heart className="w-5 h-5 text-primary" />}
+              icon={<Heart className="w-5 h-5 text-primary-foreground" />}
               className="text-xs sm:text-sm"
               action={
                 <Button
