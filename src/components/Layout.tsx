@@ -58,7 +58,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
             </SheetContent>
           </Sheet>
 
-          <h1 className="text-lg font-bold text-primary">Vedic Knowledge</h1>
+          <h1 className="text-lg font-bold text-primary">Arya Ved</h1>
 
           <div className="w-10" /> {/* Spacer for centering */}
         </div>
@@ -66,14 +66,16 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
 
       {/* Desktop Header */}
       <header className="hidden md:block sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container mx-auto px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-2">
+        <div className="container mx-auto px-6 h-20 flex items-center justify-between">
+          <div className="flex items-center gap-3">
             <img
-              src="/assets/download.png" // Use the Arya Samaj logo image on desktop too
+              src="/assets/download.png"
               alt="Arya Samaj Logo"
-              className="w-10 h-10"
+              className="w-12 h-12"
             />
-            <h1 className="text-xl font-bold text-primary">Vedic Knowledge</h1>
+            <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+              Arya Ved
+            </h1>
           </div>
           <NavLinks />
         </div>

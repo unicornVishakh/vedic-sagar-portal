@@ -12,6 +12,7 @@ const SplashScreen = ({ onComplete }: SplashScreenProps) => {
   const [sliderPosition, setSliderPosition] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [audioRef] = useState(() => new Audio("/assets/ancient-spirit-echoes-om-chanting-234045.mp3"));
 
   // Detect mobile view on mount and resize
   useEffect(() => {
@@ -23,64 +24,38 @@ const SplashScreen = ({ onComplete }: SplashScreenProps) => {
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
-  // Play OM chant once on mount
+  // Play OM chanting audio on mount and loop until completion
   useEffect(() => {
-    const playOmChant = () => {
-      if ('speechSynthesis' in window) {
-        // Wait for voices to load
-        const voices = window.speechSynthesis.getVoices();
-        
-        const speakOm = () => {
-          window.speechSynthesis.cancel();
-          
-          const utterance = new SpeechSynthesisUtterance("ॐ");
-          utterance.lang = 'hi-IN'; // Sanskrit/Hindi
-          utterance.rate = 0.5; // Very slow for spiritual effect
-          utterance.pitch = 0.8; // Lower pitch for depth
-          utterance.volume = 1;
-          
-          // Try to find an Indian voice for authentic pronunciation
-          const voices = window.speechSynthesis.getVoices();
-          const indianVoice = voices.find(voice => 
-            voice.lang.startsWith('hi') || 
-            voice.lang.startsWith('sa') ||
-            voice.lang.startsWith('en-IN')
-          );
-          
-          if (indianVoice) {
-            utterance.voice = indianVoice;
-          }
-          
-          window.speechSynthesis.speak(utterance);
-        };
-
-        if (voices.length > 0) {
-          speakOm();
-        } else {
-          // Wait for voices to load
-          window.speechSynthesis.onvoiceschanged = () => {
-            speakOm();
-          };
-        }
+    audioRef.loop = true;
+    audioRef.volume = 0.7;
+    
+    const playAudio = async () => {
+      try {
+        await audioRef.play();
+      } catch (error) {
+        console.log("Audio autoplay prevented:", error);
       }
     };
-
-    // Small delay to ensure everything is loaded
-    const timer = setTimeout(playOmChant, 300);
+    
+    playAudio();
     
     return () => {
-      clearTimeout(timer);
-      window.speechSynthesis.cancel();
+      audioRef.pause();
+      audioRef.currentTime = 0;
     };
-  }, []);
+  }, [audioRef]);
 
   // Memoized version of handleComplete
   const handleComplete = useCallback(() => {
+    // Stop audio when completing
+    audioRef.pause();
+    audioRef.currentTime = 0;
+    
     setIsVisible(false);
     if (onComplete) {
       setTimeout(onComplete, 500); // Delay matches fade-out duration
     }
-  }, [onComplete]);
+  }, [onComplete, audioRef]);
 
   // Handle desktop loading bar progress and auto-completion
   useEffect(() => {
