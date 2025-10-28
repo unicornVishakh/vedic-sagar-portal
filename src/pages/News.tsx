@@ -26,9 +26,9 @@ const News = () => {
         <div className="space-y-8 max-w-4xl mx-auto">
           {news?.map((article) => (
             <Card key={article.id} className="shadow-lg hover:shadow-xl transition-shadow overflow-hidden">
-              <div className="grid md:grid-cols-3">
+              <div className="flex flex-col md:grid md:grid-cols-3">
                 {article.image_url && (
-                  <div className="md:col-span-1 h-48 md:h-full">
+                  <div className="w-full md:col-span-1 h-56 md:h-full">
                     <img src={article.image_url} alt={article.title} className="w-full h-full object-cover" />
                   </div>
                 )}

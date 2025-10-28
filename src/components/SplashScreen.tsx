@@ -32,22 +32,32 @@ const SplashScreen = ({ onComplete }: SplashScreenProps) => {
     
     const playAudio = async () => {
       try {
+        // Set muted initially for mobile browsers
+        if (isMobile) {
+          audioRef.muted = false;
+        }
         await audioRef.play();
         setAudioStarted(true);
       } catch (error) {
-        // Autoplay may be blocked - will retry on user interaction
-        console.log("Audio autoplay prevented - will retry on interaction");
+        // If autoplay fails, try with muted first then unmute
+        try {
+          audioRef.muted = true;
+          await audioRef.play();
+          audioRef.muted = false;
+          setAudioStarted(true);
+        } catch (e) {
+          console.log("Audio autoplay prevented - will retry on interaction");
+        }
       }
     };
     
-    // Attempt to play on both mobile and desktop
     playAudio();
     
     return () => {
       audioRef.pause();
       audioRef.currentTime = 0;
     };
-  }, [audioRef]);
+  }, [audioRef, isMobile]);
 
   // Handle audio playback on first user interaction (for mobile)
   const handleScreenInteraction = async () => {

@@ -113,7 +113,7 @@ export const useGallery = () => {
 };
 
 // Manual type definitions for tables not in auto-generated types
-interface Event {
+export interface Event {
   id: number;
   title: string;
   description: string | null;
@@ -121,16 +121,18 @@ interface Event {
   end_time: string | null;
   location: string | null;
   image_url: string | null;
+  link: string | null;
   created_at: string;
 }
 
-interface NewsItem {
+export interface NewsItem {
   id: number;
   title: string;
   content: string | null;
   author: string | null;
   published_at: string;
   image_url: string | null;
+  link: string | null;
 }
 
 export const useEvent = (id: string) => {

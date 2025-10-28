@@ -46,7 +46,7 @@ const EventDetail = () => {
 
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         {event.image_url && (
-          <div className="h-96 overflow-hidden rounded-lg mb-8 shadow-lg">
+          <div className="w-full h-64 md:h-96 overflow-hidden rounded-lg mb-8 shadow-lg">
             <img src={event.image_url} alt={event.title} className="w-full h-full object-cover" />
           </div>
         )}
