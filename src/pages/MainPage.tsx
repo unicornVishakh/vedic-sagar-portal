@@ -1,53 +1,42 @@
 import ContentBlock from "@/components/ContentBlock";
 import { useContentSections } from "@/hooks/useSupabaseQuery";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Banner } from "@/components/ui/banner";
-import { Heart, ArrowRight } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { MinimalistHero } from "@/components/ui/minimalist-hero";
+import { Facebook, Instagram, Twitter, Youtube } from "lucide-react";
+import sageImage from "@/assets/sage-meditation.png";
 
 const MainPage = () => {
   const { data: sections, isLoading } = useContentSections();
-  const navigate = useNavigate();
-  const [showBanner, setShowBanner] = useState(true);
+
+  const navLinks = [
+    { label: 'HOME', href: '/home' },
+    { label: 'DONATE', href: '/donation' },
+  ];
+
+  const socialLinks = [
+    { icon: Facebook, href: '#' },
+    { icon: Instagram, href: '#' },
+    { icon: Twitter, href: '#' },
+    { icon: Youtube, href: '#' },
+  ];
 
   return (
     <div className="min-h-screen">
-      {/* Banner with integrated announcement */}
-      <div className="w-full h-64 md:h-96 overflow-hidden relative">
-        <img
-          src="https://images.unsplash.com/photo-1582510003544-4d00b7f74220?w=1600&auto=format&fit=crop"
-          alt="Vedic Knowledge Banner"
-          className="w-full h-full object-cover"
-        />
-        {showBanner && (
-          <div className="absolute top-4 left-0 right-0 px-2 sm:px-4 z-10">
-            <Banner
-              show={showBanner}
-              onHide={() => setShowBanner(false)}
-              variant="gradient"
-              title="Support Our Mission"
-              description="Help us preserve and share Vedic knowledge with the world"
-              showShade={true}
-              closable={true}
-              icon={<Heart className="w-5 h-5 text-primary" />}
-              className="text-xs sm:text-sm"
-              action={
-                <Button
-                  onClick={() => navigate("/donate-form")}
-                  size="sm"
-                  className="gap-1 text-xs sm:text-sm px-2 sm:px-3"
-                  variant="default"
-                >
-                  Donate Now
-                  <ArrowRight className="h-3 w-3" />
-                </Button>
-              }
-            />
-          </div>
-        )}
-      </div>
+      {/* Hero Section */}
+      <MinimalistHero
+        logoText="Veda Vogue"
+        navLinks={navLinks}
+        mainText="Discover the timeless wisdom of Vedic knowledge. Explore ancient teachings, bhajans, festivals, and spiritual practices that have guided humanity for millennia."
+        readMoreLink="#explore"
+        imageSrc={sageImage}
+        imageAlt="Ancient sage in meditation"
+        overlayText={{
+          part1: 'Ancient',
+          part2: 'Wisdom',
+        }}
+        socialLinks={socialLinks}
+        locationText="Preserving Vedic Heritage"
+      />
 
       {/* Content Sections */}
       <div className="container mx-auto px-4 py-8">
