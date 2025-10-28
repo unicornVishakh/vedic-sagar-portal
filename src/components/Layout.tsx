@@ -1,27 +1,22 @@
-import { Menu, X } from "lucide-react";
-import { useState } from "react";
+import { Home, CalendarDays, Newspaper, Heart } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
-import { Button } from "./ui/button";
-import { Sheet, SheetContent, SheetTrigger } from "./ui/sheet";
 
 const Layout = ({ children }: { children: React.ReactNode }) => {
-  const [open, setOpen] = useState(false);
   const location = useLocation();
 
   const navItems = [
-    { label: "Home", path: "/home" },
-    { label: "Events", path: "/events" },
-    { label: "News", path: "/news" },
-    { label: "Donate", path: "/donation" },
+    { label: "Home", path: "/home", icon: Home },
+    { label: "Events", path: "/events", icon: CalendarDays },
+    { label: "News", path: "/news", icon: Newspaper },
+    { label: "Donate", path: "/donation", icon: Heart },
   ];
 
-  const NavLinks = ({ mobile = false }: { mobile?: boolean }) => (
-    <nav className={`flex ${mobile ? "flex-col" : "flex-row"} gap-2`}>
+  const NavLinks = () => (
+    <nav className="flex flex-row gap-2">
       {navItems.map((item) => (
         <Link
           key={item.path}
           to={item.path}
-          onClick={() => mobile && setOpen(false)}
           className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
             location.pathname === item.path
               ? "bg-primary text-primary-foreground"
@@ -36,36 +31,6 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <div className="min-h-screen flex flex-col w-full">
-      {/* Mobile Header */}
-      <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 md:hidden">
-        <div className="flex h-16 items-center justify-between px-4">
-          <Sheet open={open} onOpenChange={setOpen}>
-            <SheetTrigger asChild>
-              <Button variant="ghost" size="icon">
-                {open ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="left" className="w-64 flex flex-col"> {/* Added flex flex-col */}
-              <div className="flex-1 py-6">
-                <NavLinks mobile />
-              </div>
-              {/* Large Logo at the bottom */}
-              <div className="mt-auto pb-6 flex justify-center"> {/* Added mt-auto and flex justify-center */}
-                <img
-                  src="/assets/download.png" // Use the Arya Samaj logo image
-                  alt="Arya Samaj Logo"
-                  className="w-32 h-auto" // Increased size
-                />
-              </div>
-            </SheetContent>
-          </Sheet>
-
-          <h1 className="text-lg font-bold text-primary">Veda Vogue</h1>
-
-          <div className="w-10" /> {/* Spacer for centering */}
-        </div>
-      </header>
-
       {/* Desktop Header */}
       <header className="hidden md:block sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container mx-auto px-6 h-20 flex items-center justify-between">
@@ -84,7 +49,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 w-full flex flex-col">
+      <main className="flex-1 w-full flex flex-col pb-16 md:pb-0">
         <div className="flex-1">
           {children}
         </div>
@@ -98,6 +63,28 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
           </div>
         </footer>
       </main>
+
+      {/* Mobile Bottom Navigation */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 border-t bg-background shadow-[0_-1px_3px_rgba(0,0,0,0.1)]">
+        <nav className="flex justify-around items-center h-16">
+          {navItems.map((item) => {
+            const Icon = item.icon;
+            const isActive = location.pathname === item.path;
+            return (
+              <Link
+                key={item.path}
+                to={item.path}
+                className={`flex flex-col items-center justify-center gap-1 p-2 rounded-md transition-colors w-1/4 ${
+                  isActive ? "text-primary" : "text-muted-foreground hover:text-primary"
+                }`}
+              >
+                <Icon className="w-6 h-6" />
+                <span className="text-xs font-medium">{item.label}</span>
+              </Link>
+            );
+          })}
+        </nav>
+      </div>
     </div>
   );
 };
