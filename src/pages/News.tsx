@@ -1,8 +1,7 @@
 import { useNews } from "@/hooks/useSupabaseQuery";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { User, Calendar } from "lucide-react";
-import ContentRenderer from "@/lib/content-parser";
+import { Newspaper, User, Calendar } from "lucide-react";
 
 const News = () => {
   const { data: news, isLoading } = useNews();
@@ -17,7 +16,7 @@ const News = () => {
       </div>
 
       {isLoading ? (
-        <div className="space-y-8 max-w-4xl mx-auto">
+        <div className="space-y-8">
           {[...Array(3)].map((_, i) => (
             <Skeleton key={i} className="h-48 w-full rounded-lg" />
           ))}
@@ -25,18 +24,18 @@ const News = () => {
       ) : (
         <div className="space-y-8 max-w-4xl mx-auto">
           {news?.map((article) => (
-            <Card key={article.id} className="shadow-lg hover:shadow-xl transition-shadow overflow-hidden">
+            <Card key={article.id} className="shadow-lg hover:shadow-xl transition-shadow">
               <div className="grid md:grid-cols-3">
                 {article.image_url && (
-                  <div className="md:col-span-1 h-48 md:h-full">
+                  <div className="md:col-span-1 h-48 md:h-full overflow-hidden rounded-t-lg md:rounded-l-lg md:rounded-t-none">
                     <img src={article.image_url} alt={article.title} className="w-full h-full object-cover" />
                   </div>
                 )}
-                <div className={article.image_url ? "md:col-span-2" : "md:col-span-3"}>
+                <div className="md:col-span-2">
                   <CardHeader>
                     <CardTitle className="text-2xl text-primary">{article.title}</CardTitle>
                     <CardDescription className="pt-2">
-                      <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-muted-foreground text-sm">
+                      <div className="flex items-center gap-4 text-muted-foreground text-sm">
                         {article.author && (
                           <div className="flex items-center gap-2">
                             <User className="w-4 h-4" />
@@ -51,11 +50,7 @@ const News = () => {
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    {/* Use the new ContentRenderer component */}
-                    <ContentRenderer 
-                      text={article.content} 
-                      className="text-muted-foreground" 
-                    />
+                    <p className="text-muted-foreground">{article.content}</p>
                   </CardContent>
                 </div>
               </div>
