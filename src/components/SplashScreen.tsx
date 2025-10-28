@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { ChevronRight } from "lucide-react";
-import Prism from '@/components/ui/prism'; // Import the Prism component
+// Removed Prism import
 
 interface SplashScreenProps {
   onComplete?: () => void;
@@ -114,26 +114,14 @@ const SplashScreen = ({ onComplete }: SplashScreenProps) => {
         <h1 className="text-8xl md:text-9xl font-bold text-primary">ॐ</h1>
       </div>
 
-      {/* Middle Section: Prism with Rishi Image */}
+      {/* Middle Section: Rishi Image */}
       <div className="flex-1 flex items-center justify-center w-full max-w-xs px-4"> {/* Added padding */}
-        <div className="w-48 h-48 md:w-64 md:h-64 aspect-square relative"> {/* Container size */}
-          <Prism
-            animationType="rotate" // Use simple Y-axis rotation
-            timeScale={0.3}        // Rotation speed
-            height={1.2}           // Adjusted height
-            baseWidth={1.8}        // Adjusted base width
-            scale={1.8}            // Adjusted scale
-            noise={0.1}
-            glow={0.5}
-            transparent={true}
-            hueShift={-1.9} // Ensure saffron color via prop or rely on default in Prism component
-            colorFrequency={0.6} // Ensure adjusted frequency via prop or rely on default
-          />
+        <div className="w-full h-full aspect-square relative flex items-center justify-center"> {/* Use full container size */}
           {/* Rishi Image - Ensure rishi-yagya-loop.jpg is in public/assets/ */}
           <img
-            src="/assets/task_01k8m963hwfngaxjxj1nf2t5j7_1761617406_img_1.webp" // Using the JPG file name
+            src="/assets/rishi-yagya-loop.jpg" // Using the JPG file name
             alt="Rishi performing Yagya"
-            className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-16 h-16 md:w-20 md:h-20 object-contain pointer-events-none rounded-full" // Removed blend mode
+            className="w-48 h-48 md:w-64 md:h-64 object-contain pointer-events-none rounded-full" // Increased size
             style={{ imageRendering: 'pixelated' }} // Optional: Keeps sharp edges
           />
         </div>
