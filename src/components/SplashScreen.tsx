@@ -181,11 +181,14 @@ const SplashScreen = ({ onComplete }: SplashScreenProps) => {
 
        {/* Footer Text */}
       <div className="flex flex-col items-center justify-center gap-2 pb-4"> {/* Adjusted gap */}
-        <img
-            src="/assets/download.png" // Use the Arya Samaj logo image
-            alt="Arya Samaj Logo"
-            className="h-10 w-auto md:h-12 mb-1" // Adjust size and add margin-bottom
-        />
+        <div className="flex items-center gap-2"> {/* New flex container for logo and text */}
+            <img
+                src="/assets/download.png" // Use the Arya Samaj logo image
+                alt="Arya Samaj Logo"
+                className="h-10 w-auto md:h-12" // Adjust size
+            />
+            <h2 className="text-3xl md:text-4xl font-bold text-secondary">ARYA SAMAJ</h2> {/* Added Text */}
+        </div>
         <p className="text-xs text-muted-foreground">Built and Maintained by Neural AI</p>
       </div>
     </div>
