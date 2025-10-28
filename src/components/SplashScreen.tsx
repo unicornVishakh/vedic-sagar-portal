@@ -115,13 +115,13 @@ const SplashScreen = ({ onComplete }: SplashScreenProps) => {
       </div>
 
       {/* Middle Section: Rishi Image */}
-      <div className="flex-1 flex items-center justify-center w-full max-w-xs px-4"> {/* Added padding */}
+      <div className="flex-1 flex items-center justify-center w-full max-w-sm px-4"> {/* Adjusted max-w */}
         <div className="w-full h-full aspect-square relative flex items-center justify-center"> {/* Use full container size */}
           {/* Rishi Image - Ensure rishi-yagya-loop.jpg is in public/assets/ */}
           <img
-            src="/assets/task_01k8m963hwfngaxjxj1nf2t5j7_1761617406_img_1.webp" // Using the JPG file name
+            src="/assets/rishi-yagya-loop.jpg" // Using the JPG file name
             alt="Rishi performing Yagya"
-            className="w-48 h-48 md:w-64 md:h-64 object-contain pointer-events-none rounded-full" // Increased size
+            className="w-56 h-56 md:w-80 md:h-80 object-contain pointer-events-none rounded-full" // Increased size significantly
             style={{ imageRendering: 'pixelated' }} // Optional: Keeps sharp edges
           />
         </div>
