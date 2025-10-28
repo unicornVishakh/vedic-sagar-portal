@@ -5,7 +5,9 @@ import { Banner } from "@/components/ui/banner";
 import { Heart, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useState, Suspense, lazy } from "react";
+
+const YajnaScene = lazy(() => import("@/components/three/YajnaScene").then(m => ({ default: m.YajnaScene })));
 
 const MainPage = () => {
   const { data: sections, isLoading } = useContentSections();
@@ -47,6 +49,26 @@ const MainPage = () => {
             />
           </div>
         )}
+      </div>
+
+      {/* 3D Yajna Scene - Hero Element */}
+      <div className="container mx-auto px-4 py-12">
+        <div className="text-center mb-6">
+          <h2 className="text-3xl md:text-4xl font-bold text-primary mb-3">
+            Welcome to Sacred Knowledge
+          </h2>
+          <p className="text-muted-foreground text-sm md:text-base max-w-2xl mx-auto">
+            Click on the Rishi to receive a traditional welcome yajna blessing
+          </p>
+        </div>
+        
+        <Suspense fallback={
+          <div className="w-full h-[600px] rounded-lg bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
+            <div className="text-white">Loading sacred scene...</div>
+          </div>
+        }>
+          <YajnaScene autoPlay={false} />
+        </Suspense>
       </div>
 
       {/* Content Sections */}
