@@ -3,7 +3,6 @@ import { useEvent } from "@/hooks/useSupabaseQuery";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Calendar, Clock, MapPin, Link as LinkIcon } from "lucide-react";
-import ContentRenderer from "../lib/content-parser";
 
 const EventDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -72,10 +71,7 @@ const EventDetail = () => {
           )}
         </div>
         
-        <ContentRenderer 
-          text={event.description} 
-          className="text-foreground/80 leading-relaxed" 
-        />
+        <p className="text-foreground/80 leading-relaxed whitespace-pre-wrap">{event.description}</p>
 
         {event.link && (
           <div className="mt-8">
