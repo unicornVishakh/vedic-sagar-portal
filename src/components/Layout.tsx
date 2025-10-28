@@ -10,6 +10,8 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
 
   const navItems = [
     { label: "Home", path: "/home" },
+    { label: "Events", path: "/events" },
+    { label: "News", path: "/news" },
     { label: "Donate", path: "/donation" },
   ];
 
