@@ -55,37 +55,11 @@ const AudioPlayer = ({ audioUrl, title, speechUtterance, onSpeechEnd }: AudioPla
       };
 
       speechUtterance.onend = handleEnd;
-      speechUtterance.onerror = (event) => {
-        console.error('Speech synthesis error:', event);
-        handleEnd();
-      };
-
-      // Auto-play when a new utterance is received
-      if (window.speechSynthesis.speaking || window.speechSynthesis.pending) {
-        window.speechSynthesis.cancel();
-      }
-      setTimeout(() => {
-        window.speechSynthesis.speak(speechUtterance);
-        setIsPlaying(true);
-        speechProgressInterval.current = window.setInterval(() => {
-          setCurrentTime(prev => {
-            const next = prev + 0.1;
-            if (next >= duration) {
-              clearInterval(speechProgressInterval.current);
-              return duration;
-            }
-            return next;
-          });
-        }, 100);
-      }, 100);
-
+      speechUtterance.onerror = handleEnd;
 
       return () => {
         if (speechProgressInterval.current) {
           clearInterval(speechProgressInterval.current);
-        }
-        if (window.speechSynthesis.speaking || window.speechSynthesis.pending) {
-            window.speechSynthesis.cancel();
         }
       };
     } else {
@@ -104,7 +78,7 @@ const AudioPlayer = ({ audioUrl, title, speechUtterance, onSpeechEnd }: AudioPla
         }
       } else {
         // Check if we can resume or need to start fresh
-        if (window.speechSynthesis.paused) {
+        if (window.speechSynthesis.paused && currentTime > 0 && currentTime < duration) {
           // Resume paused speech
           window.speechSynthesis.resume();
         } else {
@@ -127,11 +101,7 @@ const AudioPlayer = ({ audioUrl, title, speechUtterance, onSpeechEnd }: AudioPla
         speechProgressInterval.current = window.setInterval(() => {
           setCurrentTime(prev => {
             const next = prev + 0.1;
-            if (next >= duration) {
-                clearInterval(speechProgressInterval.current);
-                return duration;
-            }
-            return next;
+            return next >= duration ? duration : next;
           });
         }, 100);
       }
