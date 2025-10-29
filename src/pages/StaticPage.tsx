@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft, Volume2 } from "lucide-react";
 import { useState, useEffect, useCallback } from "react";
 import AudioPlayer from "@/components/AudioPlayer";
+import { Card, CardContent } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
 
 const StaticPage = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -30,7 +32,6 @@ const StaticPage = () => {
 
   const handlePlayAudio = useCallback((text: string, title: string) => {
     if (!text || text.trim().length === 0) {
-      // If there's no text, ensure everything is stopped.
       setCurrentUtterance(null);
       setCurrentTitle("");
       window.speechSynthesis.cancel();
@@ -100,6 +101,7 @@ const StaticPage = () => {
         </Link>
       </div>
 
+      {/* Title Banner */}
       <div className="bg-gradient-to-r from-primary/10 to-secondary/10 border-y">
         <div className="container mx-auto px-4 py-8">
           <h1 className="text-2xl md:text-3xl font-bold text-center text-primary">
@@ -108,35 +110,57 @@ const StaticPage = () => {
         </div>
       </div>
 
+      {/* Content Body - NEW LAYOUT */}
       <div className="flex-1 container mx-auto px-4 py-8 max-w-4xl pb-32">
-        {page.content.split('\n\n').map((section, idx) => {
-          const lines = section.split('\n');
-          const title = lines[0];
-          const content = lines.slice(1).join('\n');
-          
-          return (
-            <div key={idx} className="mb-8 border-l-4 border-primary pl-6 py-3 bg-card rounded-r-lg">
-              <div className="flex items-start justify-between gap-4">
-                <div className="flex-1">
-                  <h2 className="text-xl font-bold text-primary mb-3">{title}</h2>
-                  <pre className="whitespace-pre-wrap font-sans text-base leading-relaxed text-foreground/90">
-                    {content}
-                  </pre>
-                </div>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="flex-shrink-0 mt-1"
-                  onClick={() => handlePlayAudio(content || title, title)}
-                >
-                  <Volume2 className="w-5 h-5 text-primary" />
-                </Button>
-              </div>
-            </div>
-          );
-        })}
+        <div className="space-y-8">
+          {page.content.split('\n---\n').map((majorSection, majorIdx) => {
+            const trimmedMajorSection = majorSection.trim();
+            if (!trimmedMajorSection) return null;
+
+            return (
+              <Card key={majorIdx} className="shadow-md">
+                <CardContent className="p-4 md:p-6">
+                  {trimmedMajorSection.split('\n\n').map((section, idx) => {
+                    const trimmedSection = section.trim();
+                    if (!trimmedSection) return null;
+
+                    const lines = trimmedSection.split('\n');
+                    const title = lines[0];
+                    const content = lines.slice(1).join('\n').trim();
+
+                    return (
+                      <div key={idx} className="relative py-4 border-b last:border-b-0">
+                        <div className="flex items-start justify-between gap-4">
+                          <div className="flex-1 pr-12">
+                            <h2 className={`text-xl mb-2 ${content ? 'font-bold text-primary' : 'font-semibold'}`}>
+                              {title}
+                            </h2>
+                            {content && (
+                              <pre className="whitespace-pre-wrap font-sans text-base leading-relaxed text-foreground/90">
+                                {content}
+                              </pre>
+                            )}
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="absolute top-4 right-0 flex-shrink-0"
+                            onClick={() => handlePlayAudio(content || title, title)}
+                          >
+                            <Volume2 className="w-5 h-5 text-primary" />
+                          </Button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
       </div>
       
+      {/* Fixed Audio Player */}
       {currentUtterance && (
         <AudioPlayer 
           speechUtterance={currentUtterance} 
