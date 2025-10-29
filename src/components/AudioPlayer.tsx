@@ -53,6 +53,7 @@ const AudioPlayer = ({ audioUrl, title, speechUtterance, onSpeechEnd }: AudioPla
         onSpeechEnd?.();
       };
 
+      // Set event handlers on the utterance
       speechUtterance.onend = handleEnd;
       speechUtterance.onerror = handleEnd;
 
@@ -71,6 +72,10 @@ const AudioPlayer = ({ audioUrl, title, speechUtterance, onSpeechEnd }: AudioPla
       return () => {
         if (speechProgressInterval.current) {
           clearInterval(speechProgressInterval.current);
+        }
+        // Clean up speech when component unmounts
+        if (window.speechSynthesis.speaking) {
+          window.speechSynthesis.cancel();
         }
       };
     } else {

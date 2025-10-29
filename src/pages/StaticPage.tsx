@@ -59,16 +59,7 @@ const StaticPage = () => {
         utterance.voice = indianVoice;
       }
       
-      // Set up event handlers
-      utterance.onend = () => {
-        handleSpeechEnd();
-      };
-      
-      utterance.onerror = (event) => {
-        console.error('Speech synthesis error:', event);
-        handleSpeechEnd();
-      };
-      
+      // Don't set event handlers here - let AudioPlayer handle them
       setCurrentUtterance(utterance);
       setCurrentTitle(title);
     }, 150);
