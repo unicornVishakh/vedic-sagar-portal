@@ -144,7 +144,7 @@ const StaticPage = () => {
                   variant="ghost"
                   size="icon"
                   className="flex-shrink-0 mt-1"
-                  onClick={() => handlePlayAudio(content, title)}
+                  onClick={() => handlePlayAudio(content || title, title)}
                 >
                   <Volume2 className="w-5 h-5 text-primary" />
                 </Button>
