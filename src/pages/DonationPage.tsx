@@ -1,22 +1,44 @@
-import { useGallery } from "@/hooks/useSupabaseQuery";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
 import { Heart, Mail, Phone, MapPin } from "lucide-react";
 import { InputWithFeedback } from "@/components/ui/input-with-feedback";
-import { useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
 
 const DonationPage = () => {
-  const { data: gallery, isLoading: galleryLoading } = useGallery();
   const [contactForm, setContactForm] = useState({
     name: "",
     email: "",
     message: "",
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleContactSubmit = (e: React.FormEvent) => {
+  const handleContactSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle contact form submission
-    console.log("Contact form submitted:", contactForm);
+    setIsSubmitting(true);
+    try {
+      const { error } = await supabase.from("contact_submissions").insert([
+        {
+          name: contactForm.name,
+          email: contactForm.email,
+          message: contactForm.message,
+        },
+      ]);
+      if (error) throw error;
+      toast({
+        title: "Message Sent!",
+        description: "Thank you for contacting us. We will get back to you shortly.",
+      });
+      setContactForm({ name: "", email: "", message: "" });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to send message. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -28,17 +50,17 @@ const DonationPage = () => {
             <Heart className="w-10 h-10 sm:w-12 sm:h-12 text-primary" />
             <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-primary text-center">Build the Future of Dharma, Today.</h1>
           </div>
-          
+
           <div className="max-w-5xl mx-auto space-y-10">
             <p className="text-lg sm:text-xl md:text-2xl leading-relaxed text-center text-foreground/90 font-light">
               Our heritage is timeless, but the way we share it must evolve. Your contribution fuels the innovation needed to build world-class digital platforms, ensuring Vedic wisdom not only survives but thrives in the modern world.
             </p>
-            
+
             <div className="space-y-8">
               <div className="text-center">
                 <h2 className="text-2xl sm:text-3xl font-semibold mb-8 text-primary">What We're Building Next</h2>
               </div>
-              
+
               <div className="grid gap-6 sm:gap-8 text-left max-w-4xl mx-auto">
                 <div className="flex gap-4 items-start">
                   <div className="flex-shrink-0 w-3 h-3 rounded-full bg-primary mt-2"></div>
@@ -49,7 +71,7 @@ const DonationPage = () => {
                     </p>
                   </div>
                 </div>
-                
+
                 <div className="flex gap-4 items-start">
                   <div className="flex-shrink-0 w-3 h-3 rounded-full bg-primary mt-2"></div>
                   <div>
@@ -59,7 +81,7 @@ const DonationPage = () => {
                     </p>
                   </div>
                 </div>
-                
+
                 <div className="flex gap-4 items-start">
                   <div className="flex-shrink-0 w-3 h-3 rounded-full bg-primary mt-2"></div>
                   <div>
@@ -69,7 +91,7 @@ const DonationPage = () => {
                     </p>
                   </div>
                 </div>
-                
+
                 <div className="flex gap-4 items-start">
                   <div className="flex-shrink-0 w-3 h-3 rounded-full bg-primary mt-2"></div>
                   <div>
@@ -84,8 +106,8 @@ const DonationPage = () => {
 
             <div className="text-center py-8">
 
-              <Button 
-                size="lg" 
+              <Button
+                size="lg"
                 className="text-lg px-10 py-7 h-auto"
                 onClick={() => window.location.href = '/donate-form'}
               >
@@ -190,8 +212,8 @@ const DonationPage = () => {
                 />
               </div>
 
-              <Button type="submit" className="w-full" size="lg">
-                Send Message
+              <Button type="submit" className="w-full" size="lg" disabled={isSubmitting}>
+                {isSubmitting ? "Sending..." : "Send Message"}
               </Button>
             </form>
           </div>
