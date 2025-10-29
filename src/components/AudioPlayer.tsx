@@ -41,14 +41,13 @@ const AudioPlayer = ({ audioUrl, title, speechUtterance, onSpeechEnd }: AudioPla
     if (speechUtterance) {
       setIsSpeechMode(true);
       setCurrentTime(0);
-      setDuration(0);
+      setIsPlaying(false);
       
-      const estimatedDuration = (speechUtterance.text.length / 10) * 1000; // Rough estimate
+      const estimatedDuration = (speechUtterance.text.length / 10) * 1000;
       setDuration(estimatedDuration / 1000);
       
       const handleEnd = () => {
         setIsPlaying(false);
-        setIsSpeechMode(false);
         if (speechProgressInterval.current) {
           clearInterval(speechProgressInterval.current);
         }
@@ -78,17 +77,25 @@ const AudioPlayer = ({ audioUrl, title, speechUtterance, onSpeechEnd }: AudioPla
           clearInterval(speechProgressInterval.current);
         }
       } else {
-        if (window.speechSynthesis.paused) {
-          // Resume speech
+        // Clear any existing speech
+        if (!window.speechSynthesis.paused) {
+          window.speechSynthesis.cancel();
+        }
+        
+        if (window.speechSynthesis.paused && window.speechSynthesis.pending) {
+          // Resume paused speech
           window.speechSynthesis.resume();
         } else {
-          // Start speech
-          window.speechSynthesis.speak(speechUtterance);
+          // Start new speech
           setCurrentTime(0);
+          window.speechSynthesis.speak(speechUtterance);
         }
         setIsPlaying(true);
         
         // Update progress during speech
+        if (speechProgressInterval.current) {
+          clearInterval(speechProgressInterval.current);
+        }
         speechProgressInterval.current = window.setInterval(() => {
           setCurrentTime(prev => {
             const next = prev + 0.1;

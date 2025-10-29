@@ -3,7 +3,7 @@ import { useFestivalMantras, useFestivals } from "@/hooks/useSupabaseQuery";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Calendar, Volume2 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import AudioPlayer from "@/components/AudioPlayer";
 
 const FestivalDetail = () => {
@@ -12,31 +12,54 @@ const FestivalDetail = () => {
   const { data: festivals } = useFestivals();
   const [currentUtterance, setCurrentUtterance] = useState<SpeechSynthesisUtterance | null>(null);
   const [currentTitle, setCurrentTitle] = useState<string>("");
+  const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
   
   const festival = festivals?.find(f => f.festival_id === Number(id));
 
+  // Load voices properly
+  useEffect(() => {
+    const loadVoices = () => {
+      const availableVoices = window.speechSynthesis.getVoices();
+      setVoices(availableVoices);
+    };
+
+    loadVoices();
+    
+    if (window.speechSynthesis.onvoiceschanged !== undefined) {
+      window.speechSynthesis.onvoiceschanged = loadVoices;
+    }
+
+    return () => {
+      window.speechSynthesis.cancel();
+    };
+  }, []);
+
   const handlePlayAudio = (text: string, title: string) => {
+    // Cancel any ongoing speech
     window.speechSynthesis.cancel();
     
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = 'hi-IN';
-    utterance.rate = 0.8;
-    utterance.pitch = 1;
-    
-    const voices = window.speechSynthesis.getVoices();
-    const indianVoice = voices.find(voice => 
-      voice.lang.startsWith('hi') || voice.lang.startsWith('sa')
-    );
-    
-    if (indianVoice) {
-      utterance.voice = indianVoice;
-    }
-    
-    setCurrentUtterance(utterance);
-    setCurrentTitle(title);
+    // Small delay to ensure cancellation completes
+    setTimeout(() => {
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = 'hi-IN';
+      utterance.rate = 0.8;
+      utterance.pitch = 1;
+      
+      const indianVoice = voices.find(voice => 
+        voice.lang.startsWith('hi') || voice.lang.startsWith('sa')
+      );
+      
+      if (indianVoice) {
+        utterance.voice = indianVoice;
+      }
+      
+      setCurrentUtterance(utterance);
+      setCurrentTitle(title);
+    }, 100);
   };
 
   const handleSpeechEnd = () => {
+    window.speechSynthesis.cancel();
     setCurrentUtterance(null);
     setCurrentTitle("");
   };
