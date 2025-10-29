@@ -12,66 +12,52 @@ const StaticPage = () => {
   const [currentUtterance, setCurrentUtterance] = useState<SpeechSynthesisUtterance | null>(null);
   const [currentTitle, setCurrentTitle] = useState<string>("");
   const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
-  const [voicesLoaded, setVoicesLoaded] = useState(false);
 
-  // Load voices properly with better handling
+  // Load available voices from the browser
   useEffect(() => {
     const loadVoices = () => {
-      const availableVoices = window.speechSynthesis.getVoices();
-      if (availableVoices.length > 0) {
-        setVoices(availableVoices);
-        setVoicesLoaded(true);
-      }
+      setVoices(window.speechSynthesis.getVoices());
     };
-
-    // Try to load voices immediately
     loadVoices();
-    
-    // Also set up the event listener for when voices change
     window.speechSynthesis.onvoiceschanged = loadVoices;
-
     return () => {
-      window.speechSynthesis.cancel();
       window.speechSynthesis.onvoiceschanged = null;
+      window.speechSynthesis.cancel();
     };
   }, []);
 
   const handlePlayAudio = (text: string, title: string) => {
-    console.log('StaticPage - handlePlayAudio called', { textLength: text.length, title, voicesLoaded });
-    
-    // Don't play if text is empty
     if (!text || text.trim().length === 0) {
-      console.log('StaticPage - Empty text, not playing');
       return;
     }
-    
-    // Cancel any ongoing speech immediately
+
     if (window.speechSynthesis.speaking || window.speechSynthesis.pending) {
       window.speechSynthesis.cancel();
     }
-    
-    // Wait for cancellation to complete before starting new speech
+
+    // Use a brief timeout to ensure the previous speech is fully cancelled
     setTimeout(() => {
-      console.log('StaticPage - Creating utterance');
       const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = 'hi-IN';
+
+      // --- Start of Fix ---
+      // Find an Indian voice, but don't force it if one isn't available.
+      const indianVoice = voices.find(voice =>
+        voice.lang.includes('hi') || voice.lang.includes('sa') || voice.name.toLowerCase().includes('indian')
+      );
+
+      if (indianVoice) {
+        utterance.voice = indianVoice;
+        utterance.lang = indianVoice.lang;
+      } else {
+        // Fallback to a default language if no Indian voice is found
+        utterance.lang = 'en-US'; 
+      }
+      // --- End of Fix ---
+
       utterance.rate = 0.85;
       utterance.pitch = 1.0;
       utterance.volume = 1.0;
-      
-      // Try to find an Indian voice
-      const indianVoice = voices.find(voice => 
-        voice.lang.includes('hi') || voice.lang.includes('sa') || voice.name.toLowerCase().includes('indian')
-      );
-      
-      console.log('StaticPage - Indian voice found:', !!indianVoice);
-      
-      if (indianVoice) {
-        utterance.voice = indianVoice;
-      }
-      
-      // Don't set event handlers here - let AudioPlayer handle them
-      console.log('StaticPage - Setting currentUtterance');
+
       setCurrentUtterance(utterance);
       setCurrentTitle(title);
     }, 150);
