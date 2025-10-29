@@ -3,7 +3,7 @@ import { useStaticPage } from "@/hooks/useSupabaseQuery";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Volume2 } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import AudioPlayer from "@/components/AudioPlayer";
 
 const StaticPage = () => {
@@ -20,27 +20,30 @@ const StaticPage = () => {
     };
     loadVoices();
     window.speechSynthesis.onvoiceschanged = loadVoices;
+
+    // Cleanup function to stop any speech when the component unmounts
     return () => {
-      window.speechSynthesis.onvoiceschanged = null;
       window.speechSynthesis.cancel();
+      window.speechSynthesis.onvoiceschanged = null;
     };
   }, []);
 
-  const handlePlayAudio = (text: string, title: string) => {
+  const handlePlayAudio = useCallback((text: string, title: string) => {
     if (!text || text.trim().length === 0) {
+      // If there's no text, ensure everything is stopped.
+      setCurrentUtterance(null);
+      setCurrentTitle("");
+      window.speechSynthesis.cancel();
       return;
     }
 
-    if (window.speechSynthesis.speaking || window.speechSynthesis.pending) {
-      window.speechSynthesis.cancel();
-    }
+    // Always cancel any previous speech before starting a new one.
+    window.speechSynthesis.cancel();
 
-    // Use a brief timeout to ensure the previous speech is fully cancelled
+    // Use a brief timeout to ensure the cancel command has time to execute.
     setTimeout(() => {
       const utterance = new SpeechSynthesisUtterance(text);
 
-      // --- Start of Fix ---
-      // Find an Indian voice, but don't force it if one isn't available.
       const indianVoice = voices.find(voice =>
         voice.lang.includes('hi') || voice.lang.includes('sa') || voice.name.toLowerCase().includes('indian')
       );
@@ -49,10 +52,8 @@ const StaticPage = () => {
         utterance.voice = indianVoice;
         utterance.lang = indianVoice.lang;
       } else {
-        // Fallback to a default language if no Indian voice is found
-        utterance.lang = 'en-US'; 
+        utterance.lang = 'en-US'; // Fallback language
       }
-      // --- End of Fix ---
 
       utterance.rate = 0.85;
       utterance.pitch = 1.0;
@@ -60,16 +61,14 @@ const StaticPage = () => {
 
       setCurrentUtterance(utterance);
       setCurrentTitle(title);
-    }, 150);
-  };
+    }, 100); // A short delay of 100ms is sufficient.
 
-  const handleSpeechEnd = () => {
-    if (window.speechSynthesis.speaking || window.speechSynthesis.pending) {
-      window.speechSynthesis.cancel();
-    }
+  }, [voices]); // Dependency array includes 'voices'
+
+  const handleSpeechEnd = useCallback(() => {
     setCurrentUtterance(null);
     setCurrentTitle("");
-  };
+  }, []);
 
   if (isLoading) {
     return (
@@ -101,7 +100,6 @@ const StaticPage = () => {
         </Link>
       </div>
 
-      {/* Title Banner */}
       <div className="bg-gradient-to-r from-primary/10 to-secondary/10 border-y">
         <div className="container mx-auto px-4 py-8">
           <h1 className="text-2xl md:text-3xl font-bold text-center text-primary">
@@ -110,7 +108,6 @@ const StaticPage = () => {
         </div>
       </div>
 
-      {/* Content Body */}
       <div className="flex-1 container mx-auto px-4 py-8 max-w-4xl pb-32">
         {page.content.split('\n\n').map((section, idx) => {
           const lines = section.split('\n');
@@ -139,8 +136,7 @@ const StaticPage = () => {
           );
         })}
       </div>
-
-      {/* Fixed Audio Player */}
+      
       {currentUtterance && (
         <AudioPlayer 
           speechUtterance={currentUtterance} 
