@@ -3,7 +3,7 @@ import { useStaticPage } from "@/hooks/useSupabaseQuery";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Volume2 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import AudioPlayer from "@/components/AudioPlayer";
 
 const StaticPage = () => {
@@ -11,29 +11,73 @@ const StaticPage = () => {
   const { data: page, isLoading } = useStaticPage(slug!);
   const [currentUtterance, setCurrentUtterance] = useState<SpeechSynthesisUtterance | null>(null);
   const [currentTitle, setCurrentTitle] = useState<string>("");
+  const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
+  const [voicesLoaded, setVoicesLoaded] = useState(false);
+
+  // Load voices properly with better handling
+  useEffect(() => {
+    const loadVoices = () => {
+      const availableVoices = window.speechSynthesis.getVoices();
+      if (availableVoices.length > 0) {
+        setVoices(availableVoices);
+        setVoicesLoaded(true);
+      }
+    };
+
+    // Try to load voices immediately
+    loadVoices();
+    
+    // Also set up the event listener for when voices change
+    window.speechSynthesis.onvoiceschanged = loadVoices;
+
+    return () => {
+      window.speechSynthesis.cancel();
+      window.speechSynthesis.onvoiceschanged = null;
+    };
+  }, []);
 
   const handlePlayAudio = (text: string, title: string) => {
-    window.speechSynthesis.cancel();
-    
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = 'hi-IN';
-    utterance.rate = 0.8;
-    utterance.pitch = 1;
-    
-    const voices = window.speechSynthesis.getVoices();
-    const indianVoice = voices.find(voice => 
-      voice.lang.startsWith('hi') || voice.lang.startsWith('sa')
-    );
-    
-    if (indianVoice) {
-      utterance.voice = indianVoice;
+    // Cancel any ongoing speech immediately
+    if (window.speechSynthesis.speaking || window.speechSynthesis.pending) {
+      window.speechSynthesis.cancel();
     }
     
-    setCurrentUtterance(utterance);
-    setCurrentTitle(title);
+    // Wait for cancellation to complete before starting new speech
+    setTimeout(() => {
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = 'hi-IN';
+      utterance.rate = 0.85;
+      utterance.pitch = 1.0;
+      utterance.volume = 1.0;
+      
+      // Try to find an Indian voice
+      const indianVoice = voices.find(voice => 
+        voice.lang.includes('hi') || voice.lang.includes('sa') || voice.name.toLowerCase().includes('indian')
+      );
+      
+      if (indianVoice) {
+        utterance.voice = indianVoice;
+      }
+      
+      // Set up event handlers
+      utterance.onend = () => {
+        handleSpeechEnd();
+      };
+      
+      utterance.onerror = (event) => {
+        console.error('Speech synthesis error:', event);
+        handleSpeechEnd();
+      };
+      
+      setCurrentUtterance(utterance);
+      setCurrentTitle(title);
+    }, 150);
   };
 
   const handleSpeechEnd = () => {
+    if (window.speechSynthesis.speaking || window.speechSynthesis.pending) {
+      window.speechSynthesis.cancel();
+    }
     setCurrentUtterance(null);
     setCurrentTitle("");
   };
