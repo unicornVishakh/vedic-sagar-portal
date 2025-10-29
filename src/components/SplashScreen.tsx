@@ -28,14 +28,11 @@ const SplashScreen = ({ onComplete }: SplashScreenProps) => {
   // Setup audio on mount
   useEffect(() => {
     audioRef.loop = true;
-    audioRef.volume = 0.7;
+    audioRef.volume = 0.5;
     
     const playAudio = async () => {
       try {
-        // Set muted initially for mobile browsers
-        if (isMobile) {
-          audioRef.muted = false;
-        }
+        audioRef.muted = false;
         await audioRef.play();
         setAudioStarted(true);
       } catch (error) {
@@ -43,17 +40,25 @@ const SplashScreen = ({ onComplete }: SplashScreenProps) => {
         try {
           audioRef.muted = true;
           await audioRef.play();
-          audioRef.muted = false;
+          // Unmute after a short delay
+          setTimeout(() => {
+            audioRef.muted = false;
+          }, 100);
           setAudioStarted(true);
         } catch (e) {
-          console.log("Audio autoplay prevented - will retry on interaction");
+          console.log("Audio autoplay prevented - will play on user interaction");
+          setAudioStarted(false);
         }
       }
     };
     
-    playAudio();
+    // Delay audio start slightly to ensure DOM is ready
+    const timer = setTimeout(() => {
+      playAudio();
+    }, 100);
     
     return () => {
+      clearTimeout(timer);
       audioRef.pause();
       audioRef.currentTime = 0;
     };
@@ -63,6 +68,8 @@ const SplashScreen = ({ onComplete }: SplashScreenProps) => {
   const handleScreenInteraction = async () => {
     if (!audioStarted) {
       try {
+        audioRef.muted = false;
+        audioRef.volume = 0.5;
         await audioRef.play();
         setAudioStarted(true);
       } catch (error) {
