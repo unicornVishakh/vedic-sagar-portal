@@ -77,18 +77,20 @@ const AudioPlayer = ({ audioUrl, title, speechUtterance, onSpeechEnd }: AudioPla
           clearInterval(speechProgressInterval.current);
         }
       } else {
-        // Clear any existing speech
-        if (!window.speechSynthesis.paused) {
-          window.speechSynthesis.cancel();
-        }
-        
-        if (window.speechSynthesis.paused && window.speechSynthesis.pending) {
+        // Check if we can resume or need to start fresh
+        if (window.speechSynthesis.paused && currentTime > 0 && currentTime < duration) {
           // Resume paused speech
           window.speechSynthesis.resume();
         } else {
           // Start new speech
-          setCurrentTime(0);
-          window.speechSynthesis.speak(speechUtterance);
+          if (window.speechSynthesis.speaking || window.speechSynthesis.pending) {
+            window.speechSynthesis.cancel();
+          }
+          
+          setTimeout(() => {
+            setCurrentTime(0);
+            window.speechSynthesis.speak(speechUtterance);
+          }, 100);
         }
         setIsPlaying(true);
         

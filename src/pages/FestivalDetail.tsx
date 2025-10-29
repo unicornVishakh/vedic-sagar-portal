@@ -13,53 +13,74 @@ const FestivalDetail = () => {
   const [currentUtterance, setCurrentUtterance] = useState<SpeechSynthesisUtterance | null>(null);
   const [currentTitle, setCurrentTitle] = useState<string>("");
   const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
+  const [voicesLoaded, setVoicesLoaded] = useState(false);
   
   const festival = festivals?.find(f => f.festival_id === Number(id));
 
-  // Load voices properly
+  // Load voices properly with better handling
   useEffect(() => {
     const loadVoices = () => {
       const availableVoices = window.speechSynthesis.getVoices();
-      setVoices(availableVoices);
+      if (availableVoices.length > 0) {
+        setVoices(availableVoices);
+        setVoicesLoaded(true);
+      }
     };
 
+    // Try to load voices immediately
     loadVoices();
     
-    if (window.speechSynthesis.onvoiceschanged !== undefined) {
-      window.speechSynthesis.onvoiceschanged = loadVoices;
-    }
+    // Also set up the event listener for when voices change
+    window.speechSynthesis.onvoiceschanged = loadVoices;
 
     return () => {
       window.speechSynthesis.cancel();
+      window.speechSynthesis.onvoiceschanged = null;
     };
   }, []);
 
   const handlePlayAudio = (text: string, title: string) => {
-    // Cancel any ongoing speech
-    window.speechSynthesis.cancel();
+    // Cancel any ongoing speech immediately
+    if (window.speechSynthesis.speaking || window.speechSynthesis.pending) {
+      window.speechSynthesis.cancel();
+    }
     
-    // Small delay to ensure cancellation completes
+    // Wait for cancellation to complete before starting new speech
     setTimeout(() => {
       const utterance = new SpeechSynthesisUtterance(text);
       utterance.lang = 'hi-IN';
-      utterance.rate = 0.8;
-      utterance.pitch = 1;
+      utterance.rate = 0.85;
+      utterance.pitch = 1.0;
+      utterance.volume = 1.0;
       
+      // Try to find an Indian voice
       const indianVoice = voices.find(voice => 
-        voice.lang.startsWith('hi') || voice.lang.startsWith('sa')
+        voice.lang.includes('hi') || voice.lang.includes('sa') || voice.name.toLowerCase().includes('indian')
       );
       
       if (indianVoice) {
         utterance.voice = indianVoice;
       }
       
+      // Set up event handlers
+      utterance.onend = () => {
+        handleSpeechEnd();
+      };
+      
+      utterance.onerror = (event) => {
+        console.error('Speech synthesis error:', event);
+        handleSpeechEnd();
+      };
+      
       setCurrentUtterance(utterance);
       setCurrentTitle(title);
-    }, 100);
+    }, 150);
   };
 
   const handleSpeechEnd = () => {
-    window.speechSynthesis.cancel();
+    if (window.speechSynthesis.speaking || window.speechSynthesis.pending) {
+      window.speechSynthesis.cancel();
+    }
     setCurrentUtterance(null);
     setCurrentTitle("");
   };
