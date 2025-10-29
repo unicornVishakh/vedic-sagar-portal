@@ -37,6 +37,14 @@ const StaticPage = () => {
   }, []);
 
   const handlePlayAudio = (text: string, title: string) => {
+    console.log('StaticPage - handlePlayAudio called', { textLength: text.length, title, voicesLoaded });
+    
+    // Don't play if text is empty
+    if (!text || text.trim().length === 0) {
+      console.log('StaticPage - Empty text, not playing');
+      return;
+    }
+    
     // Cancel any ongoing speech immediately
     if (window.speechSynthesis.speaking || window.speechSynthesis.pending) {
       window.speechSynthesis.cancel();
@@ -44,6 +52,7 @@ const StaticPage = () => {
     
     // Wait for cancellation to complete before starting new speech
     setTimeout(() => {
+      console.log('StaticPage - Creating utterance');
       const utterance = new SpeechSynthesisUtterance(text);
       utterance.lang = 'hi-IN';
       utterance.rate = 0.85;
@@ -55,11 +64,14 @@ const StaticPage = () => {
         voice.lang.includes('hi') || voice.lang.includes('sa') || voice.name.toLowerCase().includes('indian')
       );
       
+      console.log('StaticPage - Indian voice found:', !!indianVoice);
+      
       if (indianVoice) {
         utterance.voice = indianVoice;
       }
       
       // Don't set event handlers here - let AudioPlayer handle them
+      console.log('StaticPage - Setting currentUtterance');
       setCurrentUtterance(utterance);
       setCurrentTitle(title);
     }, 150);

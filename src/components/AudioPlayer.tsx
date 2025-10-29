@@ -39,6 +39,12 @@ const AudioPlayer = ({ audioUrl, title, speechUtterance, onSpeechEnd }: AudioPla
   // Handle speech synthesis
   useEffect(() => {
     if (speechUtterance) {
+      console.log('AudioPlayer - Received utterance', { 
+        textLength: speechUtterance.text.length, 
+        lang: speechUtterance.lang,
+        voice: speechUtterance.voice?.name 
+      });
+      
       setIsSpeechMode(true);
       setCurrentTime(0);
       
@@ -46,6 +52,16 @@ const AudioPlayer = ({ audioUrl, title, speechUtterance, onSpeechEnd }: AudioPla
       setDuration(estimatedDuration / 1000);
       
       const handleEnd = () => {
+        console.log('AudioPlayer - Speech ended');
+        setIsPlaying(false);
+        if (speechProgressInterval.current) {
+          clearInterval(speechProgressInterval.current);
+        }
+        onSpeechEnd?.();
+      };
+
+      const handleError = (event: SpeechSynthesisErrorEvent) => {
+        console.error('AudioPlayer - Speech error:', event.error);
         setIsPlaying(false);
         if (speechProgressInterval.current) {
           clearInterval(speechProgressInterval.current);
@@ -55,11 +71,14 @@ const AudioPlayer = ({ audioUrl, title, speechUtterance, onSpeechEnd }: AudioPla
 
       // Set event handlers on the utterance
       speechUtterance.onend = handleEnd;
-      speechUtterance.onerror = handleEnd;
+      speechUtterance.onerror = handleError;
 
       // Automatically start playing when utterance is received
+      console.log('AudioPlayer - Starting speech');
       setIsPlaying(true);
       window.speechSynthesis.speak(speechUtterance);
+      
+      console.log('AudioPlayer - Speaking state:', window.speechSynthesis.speaking);
       
       // Start progress tracking
       speechProgressInterval.current = window.setInterval(() => {
@@ -70,6 +89,7 @@ const AudioPlayer = ({ audioUrl, title, speechUtterance, onSpeechEnd }: AudioPla
       }, 100);
 
       return () => {
+        console.log('AudioPlayer - Cleanup');
         if (speechProgressInterval.current) {
           clearInterval(speechProgressInterval.current);
         }
