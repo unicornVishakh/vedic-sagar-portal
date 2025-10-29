@@ -39,20 +39,13 @@ const AudioPlayer = ({ audioUrl, title, speechUtterance, onSpeechEnd }: AudioPla
   // Handle speech synthesis
   useEffect(() => {
     if (speechUtterance) {
-      console.log('AudioPlayer - Received utterance', { 
-        textLength: speechUtterance.text.length, 
-        lang: speechUtterance.lang,
-        voice: speechUtterance.voice?.name 
-      });
-      
       setIsSpeechMode(true);
       setCurrentTime(0);
-      
+
       const estimatedDuration = (speechUtterance.text.length / 10) * 1000;
       setDuration(estimatedDuration / 1000);
-      
+
       const handleEnd = () => {
-        console.log('AudioPlayer - Speech ended');
         setIsPlaying(false);
         if (speechProgressInterval.current) {
           clearInterval(speechProgressInterval.current);
@@ -69,18 +62,12 @@ const AudioPlayer = ({ audioUrl, title, speechUtterance, onSpeechEnd }: AudioPla
         onSpeechEnd?.();
       };
 
-      // Set event handlers on the utterance
       speechUtterance.onend = handleEnd;
       speechUtterance.onerror = handleError;
 
-      // Automatically start playing when utterance is received
-      console.log('AudioPlayer - Starting speech');
       setIsPlaying(true);
       window.speechSynthesis.speak(speechUtterance);
-      
-      console.log('AudioPlayer - Speaking state:', window.speechSynthesis.speaking);
-      
-      // Start progress tracking
+
       speechProgressInterval.current = window.setInterval(() => {
         setCurrentTime(prev => {
           const next = prev + 0.1;
@@ -88,14 +75,13 @@ const AudioPlayer = ({ audioUrl, title, speechUtterance, onSpeechEnd }: AudioPla
         });
       }, 100);
 
+      // --- MODIFIED CLEANUP ---
+      // This cleanup function now only clears the progress interval.
+      // It no longer calls `window.speechSynthesis.cancel()`, which was
+      // the source of the race condition that prevented audio from playing.
       return () => {
-        console.log('AudioPlayer - Cleanup');
         if (speechProgressInterval.current) {
           clearInterval(speechProgressInterval.current);
-        }
-        // Clean up speech when component unmounts
-        if (window.speechSynthesis.speaking) {
-          window.speechSynthesis.cancel();
         }
       };
     } else {
@@ -106,18 +92,15 @@ const AudioPlayer = ({ audioUrl, title, speechUtterance, onSpeechEnd }: AudioPla
   const togglePlay = () => {
     if (isSpeechMode && speechUtterance) {
       if (isPlaying) {
-        // Pause speech
         window.speechSynthesis.pause();
         setIsPlaying(false);
         if (speechProgressInterval.current) {
           clearInterval(speechProgressInterval.current);
         }
       } else {
-        // Resume paused speech
         window.speechSynthesis.resume();
         setIsPlaying(true);
-        
-        // Restart progress tracking
+
         if (speechProgressInterval.current) {
           clearInterval(speechProgressInterval.current);
         }
@@ -143,7 +126,6 @@ const AudioPlayer = ({ audioUrl, title, speechUtterance, onSpeechEnd }: AudioPla
 
   const handleSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (isSpeechMode) {
-      // Speech synthesis doesn't support seeking
       return;
     }
     
