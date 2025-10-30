@@ -139,7 +139,7 @@ const DonationPage = () => {
                 </div>
                 <div>
                   <h3 className="text-xl font-semibold mb-2">Email</h3>
-                  <p className="text-foreground/80">contact@vedicknowledge.org</p>
+                  <p className="text-foreground/80">vedavoguearyasamaj@gmail.com</p>
                 </div>
               </div>
 
@@ -149,20 +149,13 @@ const DonationPage = () => {
                 </div>
                 <div>
                   <h3 className="text-xl font-semibold mb-2">Phone</h3>
-                  <p className="text-foreground/80">+1 (555) 123-4567</p>
+                  <p className="text-foreground/80"></p>
                 </div>
               </div>
 
               <div className="flex gap-4 items-start">
                 <div className="flex-shrink-0 w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
                   <MapPin className="w-6 h-6 text-primary" />
-                </div>
-                <div>
-                  <h3 className="text-xl font-semibold mb-2">Address</h3>
-                  <p className="text-foreground/80">
-                    123 Vedic Way<br />
-                    Sacred City, SC 12345
-                  </p>
                 </div>
               </div>
             </div>
