@@ -149,7 +149,7 @@ const DonationPage = () => {
                 </div>
                 <div>
                   <h3 className="text-xl font-semibold mb-2">Phone</h3>
-                  <p className="text-foreground/80"></p>
+                  <p className="text-foreground/80">9800924322</p>
                 </div>
               </div>
 
