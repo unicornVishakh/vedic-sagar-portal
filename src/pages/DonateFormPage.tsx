@@ -2,10 +2,7 @@ import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Heart, ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -20,15 +17,6 @@ const DonateFormPage = () => {
     email: "",
     phone: "",
     amount: "",
-    donationType: "one-time",
-    paymentMethod: "",
-    address: "",
-    city: "",
-    state: "",
-    zipCode: "",
-    country: "India",
-    panNumber: "",
-    message: "",
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -41,29 +29,20 @@ const DonateFormPage = () => {
         email: formData.email,
         phone: formData.phone,
         amount: parseFloat(formData.amount),
-        donation_type: formData.donationType,
-        payment_method: formData.paymentMethod,
-        address: formData.address,
-        city: formData.city,
-        state: formData.state,
-        zip_code: formData.zipCode,
-        country: formData.country,
-        pan_number: formData.panNumber,
-        message: formData.message,
       }] as any);
 
       if (error) throw error;
 
       toast({
-        title: "Thank you for your donation!",
-        description: "Your contribution will help us preserve Vedic knowledge and strengthen our community.",
+        title: "Thank You for Your Generosity",
+        description: "Your willingness to contribute to the well-being of others is deeply appreciated. We will reach out to you soon to complete your donation. Your support helps us continue our humanitarian efforts.",
       });
 
       navigate("/donation");
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to process donation. Please try again.",
+        description: "Failed to process your request. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -91,11 +70,10 @@ const DonateFormPage = () => {
               </div>
             </div>
             <h1 className="text-3xl md:text-4xl font-bold text-primary">
-              Make a Donation
+              Express Your Interest to Donate
             </h1>
             <p className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto">
-              Your contribution helps preserve Vedic knowledge and strengthen our community. 
-              All donations are tax-deductible under Section 80G of the Income Tax Act.
+              If you wish to donate, please fill out this form, and we will reach out to you soon.
             </p>
           </div>
 
@@ -155,32 +133,9 @@ const DonateFormPage = () => {
 
               {/* Donation Details */}
               <div className="space-y-4">
-                <h3 className="text-xl font-semibold text-primary border-b pb-2">Donation Details</h3>
-                
+                <h3 className="text-xl font-semibold text-primary border-b pb-2">Donation Amount</h3>
                 <div className="space-y-2">
-                  <Label>Donation Type *</Label>
-                  <RadioGroup
-                    value={formData.donationType}
-                    onValueChange={(value) => setFormData({ ...formData, donationType: value })}
-                    className="flex flex-col sm:flex-row gap-4"
-                  >
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="one-time" id="one-time" />
-                      <Label htmlFor="one-time" className="cursor-pointer">One-time Donation</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="monthly" id="monthly" />
-                      <Label htmlFor="monthly" className="cursor-pointer">Monthly Donation</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="annual" id="annual" />
-                      <Label htmlFor="annual" className="cursor-pointer">Annual Donation</Label>
-                    </div>
-                  </RadioGroup>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="amount">Donation Amount (₹) *</Label>
+                  <Label htmlFor="amount">Amount (₹) *</Label>
                   <Input
                     id="amount"
                     type="number"
@@ -189,121 +144,6 @@ const DonateFormPage = () => {
                     value={formData.amount}
                     onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
                     placeholder="Enter amount in INR"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="paymentMethod">Payment Method *</Label>
-                  <Select
-                    value={formData.paymentMethod}
-                    onValueChange={(value) => setFormData({ ...formData, paymentMethod: value })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select payment method" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="upi">UPI</SelectItem>
-                      <SelectItem value="net-banking">Net Banking</SelectItem>
-                      <SelectItem value="credit-card">Credit Card</SelectItem>
-                      <SelectItem value="debit-card">Debit Card</SelectItem>
-                      <SelectItem value="cheque">Cheque</SelectItem>
-                      <SelectItem value="bank-transfer">Bank Transfer</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              {/* Address Information */}
-              <div className="space-y-4">
-                <h3 className="text-xl font-semibold text-primary border-b pb-2">Address Information</h3>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="address">Street Address *</Label>
-                  <Input
-                    id="address"
-                    required
-                    value={formData.address}
-                    onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                    placeholder="Enter your street address"
-                  />
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="city">City *</Label>
-                    <Input
-                      id="city"
-                      required
-                      value={formData.city}
-                      onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                      placeholder="Enter your city"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="state">State *</Label>
-                    <Input
-                      id="state"
-                      required
-                      value={formData.state}
-                      onChange={(e) => setFormData({ ...formData, state: e.target.value })}
-                      placeholder="Enter your state"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="zipCode">ZIP/Postal Code *</Label>
-                    <Input
-                      id="zipCode"
-                      required
-                      value={formData.zipCode}
-                      onChange={(e) => setFormData({ ...formData, zipCode: e.target.value })}
-                      placeholder="Enter ZIP/Postal code"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="country">Country *</Label>
-                    <Input
-                      id="country"
-                      required
-                      value={formData.country}
-                      onChange={(e) => setFormData({ ...formData, country: e.target.value })}
-                      placeholder="Enter your country"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Tax Information */}
-              <div className="space-y-4">
-                <h3 className="text-xl font-semibold text-primary border-b pb-2">Tax Information (Optional)</h3>
-                <div className="space-y-2">
-                  <Label htmlFor="panNumber">PAN Number</Label>
-                  <Input
-                    id="panNumber"
-                    value={formData.panNumber}
-                    onChange={(e) => setFormData({ ...formData, panNumber: e.target.value.toUpperCase() })}
-                    placeholder="Enter PAN for tax receipt"
-                    maxLength={10}
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    Required for claiming tax deduction under Section 80G
-                  </p>
-                </div>
-              </div>
-
-              {/* Message */}
-              <div className="space-y-4">
-                <h3 className="text-xl font-semibold text-primary border-b pb-2">Additional Message (Optional)</h3>
-                <div className="space-y-2">
-                  <Label htmlFor="message">Your Message</Label>
-                  <Textarea
-                    id="message"
-                    value={formData.message}
-                    onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                    placeholder="Share your thoughts or dedicate this donation..."
-                    rows={4}
                   />
                 </div>
               </div>
@@ -317,11 +157,10 @@ const DonateFormPage = () => {
                   disabled={isSubmitting}
                 >
                   <Heart className="w-5 h-5 mr-2" />
-                  {isSubmitting ? "Processing..." : "Complete Donation"}
+                  {isSubmitting ? "Submitting..." : "Submit"}
                 </Button>
                 <p className="text-center text-sm text-muted-foreground">
-                  By submitting this form, you agree to our terms and conditions. 
-                  Your donation is secure and will be processed immediately.
+                  By submitting this form, you express your interest in making a donation. We will contact you to complete the process.
                 </p>
               </div>
             </form>
