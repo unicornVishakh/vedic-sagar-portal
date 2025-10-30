@@ -34,10 +34,18 @@ const ContentDisplay = ({ content }: ContentDisplayProps) => {
       return;
     }
 
+    // Cancel any ongoing speech
     window.speechSynthesis.cancel();
 
+    // Wait for cancellation to complete
     setTimeout(() => {
-      const utterance = new SpeechSynthesisUtterance(text);
+      // Limit text length to prevent browser limitations (most browsers have ~32KB limit)
+      const MAX_LENGTH = 4000;
+      const truncatedText = text.length > MAX_LENGTH 
+        ? text.substring(0, MAX_LENGTH) + "..." 
+        : text;
+
+      const utterance = new SpeechSynthesisUtterance(truncatedText);
 
       const indianVoice = voices.find(voice =>
         voice.lang.includes('hi') || voice.lang.includes('sa') || voice.name.toLowerCase().includes('indian')
@@ -47,16 +55,23 @@ const ContentDisplay = ({ content }: ContentDisplayProps) => {
         utterance.voice = indianVoice;
         utterance.lang = indianVoice.lang;
       } else {
-        utterance.lang = 'en-US';
+        utterance.lang = 'hi-IN';
       }
 
       utterance.rate = 0.85;
       utterance.pitch = 1.0;
       utterance.volume = 1.0;
 
+      // Handle speech errors
+      utterance.onerror = (event) => {
+        console.error('Speech error:', event);
+        setCurrentUtterance(null);
+        setCurrentTitle("");
+      };
+
       setCurrentUtterance(utterance);
       setCurrentTitle(title);
-    }, 100);
+    }, 150);
   }, [voices]);
 
   const handleSpeechEnd = useCallback(() => {
@@ -86,7 +101,7 @@ const ContentDisplay = ({ content }: ContentDisplayProps) => {
               <CardContent className="p-4 md:p-6">
                 <div className="relative">
                   <div className="flex items-start justify-between gap-4 mb-4">
-                    <h2 className="text-xl font-bold text-primary flex-1">
+                    <h2 className="text-xl font-bold text-primary flex-1 no-underline">
                       {cardTitle}
                     </h2>
                     <Button
