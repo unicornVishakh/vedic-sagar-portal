@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -24,12 +23,12 @@ const DonateFormPage = () => {
     setIsSubmitting(true);
 
     try {
-      const { error } = await supabase.from("donations" as any).insert([{
+      const { error } = await supabase.from("donations_interest").insert([{
         donor_name: `${formData.firstName} ${formData.lastName}`.trim(),
         email: formData.email,
         phone: formData.phone,
         amount: parseFloat(formData.amount),
-      }] as any);
+      }]);
 
       if (error) throw error;
 
@@ -40,9 +39,10 @@ const DonateFormPage = () => {
 
       navigate("/donation");
     } catch (error) {
+      console.error("Donation submission error:", error);
       toast({
         title: "Error",
-        description: "Failed to process your request. Please try again.",
+        description: "Failed to process your request. Please check the console for details and try again.",
         variant: "destructive",
       });
     } finally {
