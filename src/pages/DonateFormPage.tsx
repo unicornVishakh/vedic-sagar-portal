@@ -6,10 +6,23 @@ import { Heart, ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
+const countryCodes = [
+  { name: "India", dial_code: "+91", code: "IN" },
+  { name: "United States", dial_code: "+1", code: "US" },
+  { name: "United Kingdom", dial_code: "+44", code: "GB" },
+  { name: "Australia", dial_code: "+61", code: "AU" },
+  { name: "Canada", dial_code: "+1", code: "CA" },
+  { name: "Singapore", dial_code: "+65", code: "SG" },
+  { name: "United Arab Emirates", dial_code: "+971", code: "AE" },
+  // Add more countries as needed
+];
 
 const DonateFormPage = () => {
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedCountryCode, setSelectedCountryCode] = useState("+91");
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -26,7 +39,7 @@ const DonateFormPage = () => {
       const { error } = await supabase.from("donations_interest").insert([{
         donor_name: `${formData.firstName} ${formData.lastName}`.trim(),
         email: formData.email,
-        phone: formData.phone,
+        phone: `${selectedCountryCode} ${formData.phone}`,
         amount: parseFloat(formData.amount),
       }]);
 
@@ -119,14 +132,29 @@ const DonateFormPage = () => {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="phone">Phone Number *</Label>
-                    <Input
-                      id="phone"
-                      type="tel"
-                      required
-                      value={formData.phone}
-                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                      placeholder="+91 XXXXX XXXXX"
-                    />
+                    <div className="flex items-center gap-2">
+                      <Select value={selectedCountryCode} onValueChange={setSelectedCountryCode}>
+                        <SelectTrigger className="w-[120px]">
+                          <SelectValue placeholder="Code" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {countryCodes.map((country) => (
+                            <SelectItem key={country.code} value={country.dial_code}>
+                              {country.dial_code} ({country.code})
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <Input
+                        id="phone"
+                        type="tel"
+                        required
+                        value={formData.phone}
+                        onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                        placeholder="XXXXX XXXXX"
+                        className="flex-1"
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
