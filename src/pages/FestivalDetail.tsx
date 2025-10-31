@@ -6,20 +6,13 @@ import { ArrowLeft, Calendar, Volume2 } from "lucide-react";
 import { useState, useEffect } from "react";
 import AudioPlayer from "@/components/AudioPlayer";
 
-// --- ADD THIS BLOCK ---
-// This tells TypeScript that the "Android" object might exist on the window
-interface AndroidInterface {
-  speak: (text: string) => void;
-  stop: () => void;
-}
-declare global {
-  interface Window {
-    Android?: AndroidInterface;
-  }
-}
-// --- END BLOCK ---
+// 1. IMPORT THE NEW HOOK
+import { useAndroidBridge } from "@/contexts/AndroidBridgeContext";
 
 const FestivalDetail = () => {
+  // 2. GET THE BRIDGE STATE FROM THE CONTEXT
+  const { isBridgeReady } = useAndroidBridge();
+
   const { id } = useParams<{ id: string }>();
   const { data: mantras, isLoading: mantrasLoading } = useFestivalMantras(id!);
   const { data: festivals } = useFestivals();
@@ -60,9 +53,9 @@ const FestivalDetail = () => {
 
   const handlePlayAudio = (text: string, title: string) => {
     
-    // --- MODIFIED LOGIC ---
-    if (window.Android && window.Android.speak) {
-      // 1. NATIVE ANDROID APP
+    // --- 3. UPDATED LOGIC ---
+    if (window.Android && isBridgeReady) {
+      // 1. NATIVE ANDROID APP (and bridge is ready)
       if (window.speechSynthesis) window.speechSynthesis.cancel(); // Stop any web speech
       setCurrentUtterance(null); // Ensure web player is hidden
       setCurrentTitle("");
@@ -71,13 +64,13 @@ const FestivalDetail = () => {
       window.Android.speak(title + ". " + text);
 
     } else if (window.speechSynthesis) {
-      // 2. WEB BROWSER (Original Logic)
+      // 2. WEB BROWSER (Your original, working logic)
       if (window.speechSynthesis.speaking || window.speechSynthesis.pending) {
         window.speechSynthesis.cancel();
       }
       
       setTimeout(() => {
-        const utterance = new SpeechSynthesisUtterance(text); // Your original code just used `text`
+        const utterance = new SpeechSynthesisUtterance(title + ". " + text); // Combine title and text
         utterance.lang = 'hi-IN';
         utterance.rate = 0.85;
         utterance.pitch = 1.0;
@@ -91,15 +84,15 @@ const FestivalDetail = () => {
           utterance.voice = indianVoice;
         }
         
-        // The key: JUST set the state. The AudioPlayer component will do the rest.
+        // Pass to the AudioPlayer component
         setCurrentUtterance(utterance);
         setCurrentTitle(title);
       }, 150);
     } else {
-      // 3. NOT SUPPORTED
+      // 3. NOT SUPPORTED (or bridge not ready yet)
       console.warn("Speech Synthesis not supported in this environment.");
     }
-    // --- END MODIFIED LOGIC ---
+    // --- END LOGIC UPDATE ---
   };
 
   const handleSpeechEnd = () => {
@@ -183,7 +176,7 @@ const FestivalDetail = () => {
         </div>
       </div>
 
-      {/* This will ONLY appear in web browsers, which is the original, correct behavior. */}
+      {/* This will ONLY appear in web browsers, not in the Android app. */}
       {currentUtterance && (
         <AudioPlayer 
           speechUtterance={currentUtterance} 
