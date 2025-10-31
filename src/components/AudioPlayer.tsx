@@ -38,7 +38,7 @@ const AudioPlayer = ({ audioUrl, title, speechUtterance, onSpeechEnd }: AudioPla
 
   // Handle speech synthesis
   useEffect(() => {
-    // --- ADDED SAFETY CHECK ---
+    // --- THIS IS THE CRITICAL SAFETY CHECK ---
     // Only proceed if speechUtterance exists AND the browser supports speech synthesis
     if (speechUtterance && window.speechSynthesis) {
       setIsSpeechMode(true);
@@ -68,7 +68,7 @@ const AudioPlayer = ({ audioUrl, title, speechUtterance, onSpeechEnd }: AudioPla
       speechUtterance.onerror = handleError;
 
       setIsPlaying(true);
-      // --- THIS IS THE CRITICAL CALL ---
+      // --- THIS CALL IS NOW SAFE ---
       window.speechSynthesis.speak(speechUtterance);
 
       speechProgressInterval.current = window.setInterval(() => {
@@ -93,7 +93,7 @@ const AudioPlayer = ({ audioUrl, title, speechUtterance, onSpeechEnd }: AudioPla
   }, [speechUtterance, onSpeechEnd]);
 
   const togglePlay = () => {
-    // --- ADDED SAFETY CHECK ---
+    // --- THIS IS THE SECOND CRITICAL SAFETY CHECK ---
     if (isSpeechMode && speechUtterance && window.speechSynthesis) {
       if (isPlaying) {
         window.speechSynthesis.pause();
@@ -116,6 +116,7 @@ const AudioPlayer = ({ audioUrl, title, speechUtterance, onSpeechEnd }: AudioPla
         }, 100);
       }
     } else {
+      // This is for regular MP3 audio, which is fine
       const audio = audioRef.current;
       if (!audio) return;
 
