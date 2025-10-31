@@ -6,6 +6,19 @@ import { ArrowLeft, Calendar, Volume2 } from "lucide-react";
 import { useState, useEffect } from "react";
 import AudioPlayer from "@/components/AudioPlayer";
 
+// --- ADD THIS BLOCK ---
+// This tells TypeScript that the "Android" object might exist on the window
+interface AndroidInterface {
+  speak: (text: string) => void;
+  stop: () => void;
+}
+declare global {
+  interface Window {
+    Android?: AndroidInterface;
+  }
+}
+// --- END BLOCK ---
+
 const FestivalDetail = () => {
   const { id } = useParams<{ id: string }>();
   const { data: mantras, isLoading: mantrasLoading } = useFestivalMantras(id!);
@@ -20,55 +33,78 @@ const FestivalDetail = () => {
   // Load voices properly with better handling
   useEffect(() => {
     const loadVoices = () => {
-      const availableVoices = window.speechSynthesis.getVoices();
-      if (availableVoices.length > 0) {
-        setVoices(availableVoices);
-        setVoicesLoaded(true);
+      // Only load web voices if the web API exists
+      if (window.speechSynthesis) {
+        const availableVoices = window.speechSynthesis.getVoices();
+        if (availableVoices.length > 0) {
+          setVoices(availableVoices);
+          setVoicesLoaded(true);
+        }
+        window.speechSynthesis.onvoiceschanged = loadVoices;
       }
     };
 
-    // Try to load voices immediately
     loadVoices();
     
-    // Also set up the event listener for when voices change
-    window.speechSynthesis.onvoiceschanged = loadVoices;
-
     return () => {
-      window.speechSynthesis.cancel();
-      window.speechSynthesis.onvoiceschanged = null;
+      // Stop both web and native speech on cleanup
+      if (window.speechSynthesis) {
+        window.speechSynthesis.cancel();
+        window.speechSynthesis.onvoiceschanged = null;
+      }
+      if (window.Android && window.Android.stop) {
+        window.Android.stop();
+      }
     };
   }, []);
 
   const handlePlayAudio = (text: string, title: string) => {
-    // Cancel any ongoing speech immediately
-    if (window.speechSynthesis.speaking || window.speechSynthesis.pending) {
-      window.speechSynthesis.cancel();
-    }
-    
-    // Wait for cancellation to complete before starting new speech
-    setTimeout(() => {
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = 'hi-IN';
-      utterance.rate = 0.85;
-      utterance.pitch = 1.0;
-      utterance.volume = 1.0;
+    // --- MODIFIED LOGIC ---
+    if (window.Android && window.Android.speak) {
+      // 1. NATIVE ANDROID APP
+      if (window.speechSynthesis) window.speechSynthesis.cancel(); // Stop any browser speech
       
-      // Try to find an Indian voice
-      const indianVoice = voices.find(voice => 
-        voice.lang.includes('hi') || voice.lang.includes('sa') || voice.name.toLowerCase().includes('indian')
-      );
+      // Use the native bridge to speak
+      window.Android.speak(title + ". " + text);
       
-      if (indianVoice) {
-        utterance.voice = indianVoice;
+      // Do not show the web AudioPlayer
+      setCurrentUtterance(null);
+      setCurrentTitle("");
+
+    } else if (window.speechSynthesis) {
+      // 2. WEB BROWSER
+      if (window.speechSynthesis.speaking || window.speechSynthesis.pending) {
+        window.speechSynthesis.cancel();
       }
       
-      // Don't set event handlers here - let AudioPlayer handle them
-      setCurrentUtterance(utterance);
-      setCurrentTitle(title);
-    }, 150);
+      setTimeout(() => {
+        const utterance = new SpeechSynthesisUtterance(title + ". " + text);
+        utterance.lang = 'hi-IN';
+        utterance.rate = 0.85;
+        utterance.pitch = 1.0;
+        utterance.volume = 1.0;
+        
+        const indianVoice = voices.find(voice => 
+          voice.lang.includes('hi') || voice.lang.includes('sa') || voice.name.toLowerCase().includes('indian')
+        );
+        
+        if (indianVoice) {
+          utterance.voice = indianVoice;
+        }
+        
+        // This will trigger the AudioPlayer component
+        setCurrentUtterance(utterance);
+        setCurrentTitle(title);
+      }, 150);
+    } else {
+      // 3. NOT SUPPORTED
+      console.warn("Speech Synthesis not supported in this environment.");
+    }
+    // --- END MODIFIED LOGIC ---
   };
 
   const handleSpeechEnd = () => {
+    // This is for the web AudioPlayer
     if (window.speechSynthesis.speaking || window.speechSynthesis.pending) {
       window.speechSynthesis.cancel();
     }
@@ -77,6 +113,7 @@ const FestivalDetail = () => {
   };
 
   if (mantrasLoading) {
+    // ... (rest of your loading JSX)
     return (
       <div className="container mx-auto px-4 py-12">
         <Skeleton className="h-96 w-full max-w-4xl mx-auto" />
@@ -85,6 +122,7 @@ const FestivalDetail = () => {
   }
 
   if (!mantras || mantras.length === 0) {
+    // ... (rest of your "not found" JSX)
     return (
       <div className="container mx-auto px-4 py-12 text-center">
         <p className="text-muted-foreground">No mantras found for this festival</p>
@@ -97,6 +135,7 @@ const FestivalDetail = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
+      {/* ... (rest of your header/banner JSX) ... */}
       <div className="container mx-auto px-4 py-6">
         <Link to="/festivals">
           <Button variant="ghost" className="mb-4">
@@ -106,7 +145,6 @@ const FestivalDetail = () => {
         </Link>
       </div>
 
-      {/* Title Banner */}
       <div className="bg-gradient-to-r from-primary/10 to-secondary/10 border-y">
         <div className="container mx-auto px-4 py-8">
           <div className="flex items-center justify-center gap-3 mb-2">
@@ -135,6 +173,7 @@ const FestivalDetail = () => {
                     {mantra.mantra_text}
                   </pre>
                 </div>
+                {/* This button will now correctly call the new handlePlayAudio logic */}
                 <Button
                   variant="ghost"
                   size="icon"
@@ -149,7 +188,7 @@ const FestivalDetail = () => {
         </div>
       </div>
 
-      {/* Fixed Audio Player */}
+      {/* This will now ONLY appear in web browsers, not in the Android app. */}
       {currentUtterance && (
         <AudioPlayer 
           speechUtterance={currentUtterance} 
