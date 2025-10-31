@@ -38,7 +38,9 @@ const AudioPlayer = ({ audioUrl, title, speechUtterance, onSpeechEnd }: AudioPla
 
   // Handle speech synthesis
   useEffect(() => {
-    if (speechUtterance) {
+    // --- ADDED SAFETY CHECK ---
+    // Only proceed if speechUtterance exists AND the browser supports speech synthesis
+    if (speechUtterance && window.speechSynthesis) {
       setIsSpeechMode(true);
       setCurrentTime(0);
 
@@ -66,6 +68,7 @@ const AudioPlayer = ({ audioUrl, title, speechUtterance, onSpeechEnd }: AudioPla
       speechUtterance.onerror = handleError;
 
       setIsPlaying(true);
+      // --- THIS IS THE CRITICAL CALL ---
       window.speechSynthesis.speak(speechUtterance);
 
       speechProgressInterval.current = window.setInterval(() => {
@@ -75,13 +78,13 @@ const AudioPlayer = ({ audioUrl, title, speechUtterance, onSpeechEnd }: AudioPla
         });
       }, 100);
 
-      // --- MODIFIED CLEANUP ---
-      // This cleanup function now only clears the progress interval.
-      // It no longer calls `window.speechSynthesis.cancel()`, which was
-      // the source of the race condition that prevented audio from playing.
       return () => {
         if (speechProgressInterval.current) {
           clearInterval(speechProgressInterval.current);
+        }
+        // We also add a safety check here
+        if (window.speechSynthesis) {
+           window.speechSynthesis.cancel();
         }
       };
     } else {
@@ -90,7 +93,8 @@ const AudioPlayer = ({ audioUrl, title, speechUtterance, onSpeechEnd }: AudioPla
   }, [speechUtterance, onSpeechEnd]);
 
   const togglePlay = () => {
-    if (isSpeechMode && speechUtterance) {
+    // --- ADDED SAFETY CHECK ---
+    if (isSpeechMode && speechUtterance && window.speechSynthesis) {
       if (isPlaying) {
         window.speechSynthesis.pause();
         setIsPlaying(false);
