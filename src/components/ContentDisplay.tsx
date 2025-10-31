@@ -60,32 +60,27 @@ const ContentDisplay = ({ content }: ContentDisplayProps) => {
     // --- MODIFIED LOGIC ---
     if (window.Android && window.Android.speak) {
       // 1. NATIVE ANDROID APP
-      // Stop any browser speech just in case
-      if (window.speechSynthesis) window.speechSynthesis.cancel();
-      
-      // Use the native bridge to speak
-      // We combine title and text for a full reading
-      window.Android.speak(title + ". " + text);
-      
-      // We do NOT set currentUtterance, so the web AudioPlayer
-      // component will not appear. This is correct.
-      setCurrentUtterance(null);
+      if (window.speechSynthesis) window.speechSynthesis.cancel(); // Stop any web speech
+      setCurrentUtterance(null); // Ensure web player is hidden
       setCurrentTitle("");
+      
+      // Use the native bridge to speak.
+      // NOTE: Your original code only spoke the 'fullCardText', not the title.
+      // We are preserving that by only speaking the 'text' argument.
+      window.Android.speak(text);
 
     } else if (window.speechSynthesis) {
-      // 2. WEB BROWSER (existing logic)
+      // 2. WEB BROWSER (This is your original logic, restored)
       window.speechSynthesis.cancel();
 
-      // Wait for cancellation to complete
       setTimeout(() => {
-        // Limit text length
         const MAX_LENGTH = 4000;
         const truncatedText = text.length > MAX_LENGTH 
           ? text.substring(0, MAX_LENGTH) + "..." 
           : text;
 
-        // Use the combined title and text for the web utterance
-        const utterance = new SpeechSynthesisUtterance(title + ". " + truncatedText);
+        // Create the utterance as before
+        const utterance = new SpeechSynthesisUtterance(truncatedText);
 
         const indianVoice = voices.find(voice =>
           voice.lang.includes('hi') || voice.lang.includes('sa') || voice.name.toLowerCase().includes('indian')
@@ -108,14 +103,13 @@ const ContentDisplay = ({ content }: ContentDisplayProps) => {
           setCurrentTitle("");
         };
 
-        // This will trigger the AudioPlayer component
+        // The key: JUST set the state. The AudioPlayer component will do the rest.
         setCurrentUtterance(utterance);
         setCurrentTitle(title);
       }, 150);
     } else {
       // 3. NOT SUPPORTED
       console.warn("Speech Synthesis not supported in this environment.");
-      // You could show a toast here if you like
     }
     // --- END MODIFIED LOGIC ---
 
@@ -131,7 +125,6 @@ const ContentDisplay = ({ content }: ContentDisplayProps) => {
     <>
       <div className="space-y-8">
         {content.split('\n---\n').map((majorSection, majorIdx) => {
-          // ... (rest of your existing JSX, no changes needed here)
           const trimmedMajorSection = majorSection.trim();
           if (!trimmedMajorSection) return null;
 
@@ -153,7 +146,6 @@ const ContentDisplay = ({ content }: ContentDisplayProps) => {
                     <h2 className="text-xl font-bold text-primary flex-1 no-underline">
                       {cardTitle}
                     </h2>
-                    {/* This button will now correctly call the new handlePlayAudio logic */}
                     <Button
                       variant="ghost"
                       size="icon"
@@ -189,7 +181,7 @@ const ContentDisplay = ({ content }: ContentDisplayProps) => {
         })}
       </div>
 
-      {/* This will now ONLY appear in web browsers, not in the Android app, which is correct. */}
+      {/* This will ONLY appear in web browsers, which is the original, correct behavior. */}
       {currentUtterance && (
         <AudioPlayer 
           speechUtterance={currentUtterance} 
