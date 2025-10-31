@@ -4,6 +4,19 @@ import { Button } from "@/components/ui/button";
 import { Volume2 } from "lucide-react";
 import AudioPlayer from "@/components/AudioPlayer";
 
+// --- ADD THIS BLOCK ---
+// This tells TypeScript that the "Android" object might exist on the window
+interface AndroidInterface {
+  speak: (text: string) => void;
+  stop: () => void;
+}
+declare global {
+  interface Window {
+    Android?: AndroidInterface;
+  }
+}
+// --- END BLOCK ---
+
 interface ContentDisplayProps {
   content: string;
 }
@@ -15,14 +28,23 @@ const ContentDisplay = ({ content }: ContentDisplayProps) => {
 
   useEffect(() => {
     const loadVoices = () => {
-      setVoices(window.speechSynthesis.getVoices());
+      // Only load web voices if the web API exists
+      if (window.speechSynthesis) {
+        setVoices(window.speechSynthesis.getVoices());
+        window.speechSynthesis.onvoiceschanged = loadVoices;
+      }
     };
     loadVoices();
-    window.speechSynthesis.onvoiceschanged = loadVoices;
 
     return () => {
-      window.speechSynthesis.cancel();
-      window.speechSynthesis.onvoiceschanged = null;
+      // Stop both web and native speech on cleanup
+      if (window.speechSynthesis) {
+        window.speechSynthesis.cancel();
+        window.speechSynthesis.onvoiceschanged = null;
+      }
+      if (window.Android && window.Android.stop) {
+        window.Android.stop();
+      }
     };
   }, []);
 
@@ -30,51 +52,77 @@ const ContentDisplay = ({ content }: ContentDisplayProps) => {
     if (!text || text.trim().length === 0) {
       setCurrentUtterance(null);
       setCurrentTitle("");
-      window.speechSynthesis.cancel();
+      if (window.speechSynthesis) window.speechSynthesis.cancel();
+      if (window.Android && window.Android.stop) window.Android.stop();
       return;
     }
 
-    // Cancel any ongoing speech
-    window.speechSynthesis.cancel();
+    // --- MODIFIED LOGIC ---
+    if (window.Android && window.Android.speak) {
+      // 1. NATIVE ANDROID APP
+      // Stop any browser speech just in case
+      if (window.speechSynthesis) window.speechSynthesis.cancel();
+      
+      // Use the native bridge to speak
+      // We combine title and text for a full reading
+      window.Android.speak(title + ". " + text);
+      
+      // We do NOT set currentUtterance, so the web AudioPlayer
+      // component will not appear. This is correct.
+      setCurrentUtterance(null);
+      setCurrentTitle("");
 
-    // Wait for cancellation to complete
-    setTimeout(() => {
-      // Limit text length to prevent browser limitations (most browsers have ~32KB limit)
-      const MAX_LENGTH = 4000;
-      const truncatedText = text.length > MAX_LENGTH 
-        ? text.substring(0, MAX_LENGTH) + "..." 
-        : text;
+    } else if (window.speechSynthesis) {
+      // 2. WEB BROWSER (existing logic)
+      window.speechSynthesis.cancel();
 
-      const utterance = new SpeechSynthesisUtterance(truncatedText);
+      // Wait for cancellation to complete
+      setTimeout(() => {
+        // Limit text length
+        const MAX_LENGTH = 4000;
+        const truncatedText = text.length > MAX_LENGTH 
+          ? text.substring(0, MAX_LENGTH) + "..." 
+          : text;
 
-      const indianVoice = voices.find(voice =>
-        voice.lang.includes('hi') || voice.lang.includes('sa') || voice.name.toLowerCase().includes('indian')
-      );
+        // Use the combined title and text for the web utterance
+        const utterance = new SpeechSynthesisUtterance(title + ". " + truncatedText);
 
-      if (indianVoice) {
-        utterance.voice = indianVoice;
-        utterance.lang = indianVoice.lang;
-      } else {
-        utterance.lang = 'hi-IN';
-      }
+        const indianVoice = voices.find(voice =>
+          voice.lang.includes('hi') || voice.lang.includes('sa') || voice.name.toLowerCase().includes('indian')
+        );
 
-      utterance.rate = 0.85;
-      utterance.pitch = 1.0;
-      utterance.volume = 1.0;
+        if (indianVoice) {
+          utterance.voice = indianVoice;
+          utterance.lang = indianVoice.lang;
+        } else {
+          utterance.lang = 'hi-IN';
+        }
 
-      // Handle speech errors
-      utterance.onerror = (event) => {
-        console.error('Speech error:', event);
-        setCurrentUtterance(null);
-        setCurrentTitle("");
-      };
+        utterance.rate = 0.85;
+        utterance.pitch = 1.0;
+        utterance.volume = 1.0;
 
-      setCurrentUtterance(utterance);
-      setCurrentTitle(title);
-    }, 150);
+        utterance.onerror = (event) => {
+          console.error('Speech error:', event);
+          setCurrentUtterance(null);
+          setCurrentTitle("");
+        };
+
+        // This will trigger the AudioPlayer component
+        setCurrentUtterance(utterance);
+        setCurrentTitle(title);
+      }, 150);
+    } else {
+      // 3. NOT SUPPORTED
+      console.warn("Speech Synthesis not supported in this environment.");
+      // You could show a toast here if you like
+    }
+    // --- END MODIFIED LOGIC ---
+
   }, [voices]);
 
   const handleSpeechEnd = useCallback(() => {
+    // This is for the web AudioPlayer
     setCurrentUtterance(null);
     setCurrentTitle("");
   }, []);
@@ -83,6 +131,7 @@ const ContentDisplay = ({ content }: ContentDisplayProps) => {
     <>
       <div className="space-y-8">
         {content.split('\n---\n').map((majorSection, majorIdx) => {
+          // ... (rest of your existing JSX, no changes needed here)
           const trimmedMajorSection = majorSection.trim();
           if (!trimmedMajorSection) return null;
 
@@ -104,6 +153,7 @@ const ContentDisplay = ({ content }: ContentDisplayProps) => {
                     <h2 className="text-xl font-bold text-primary flex-1 no-underline">
                       {cardTitle}
                     </h2>
+                    {/* This button will now correctly call the new handlePlayAudio logic */}
                     <Button
                       variant="ghost"
                       size="icon"
@@ -139,6 +189,7 @@ const ContentDisplay = ({ content }: ContentDisplayProps) => {
         })}
       </div>
 
+      {/* This will now ONLY appear in web browsers, not in the Android app, which is correct. */}
       {currentUtterance && (
         <AudioPlayer 
           speechUtterance={currentUtterance} 
