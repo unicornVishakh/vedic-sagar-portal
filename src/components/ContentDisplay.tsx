@@ -4,31 +4,26 @@ import { Button } from "@/components/ui/button";
 import { Volume2 } from "lucide-react";
 import AudioPlayer from "@/components/AudioPlayer";
 
-// --- ADD THIS BLOCK ---
-// This tells TypeScript that the "Android" object might exist on the window
-interface AndroidInterface {
-  speak: (text: string) => void;
-  stop: () => void;
-}
-declare global {
-  interface Window {
-    Android?: AndroidInterface;
-  }
-}
-// --- END BLOCK ---
+// --- 1. IMPORT THE NEW HOOK ---
+import { useAndroidBridge } from "@/contexts/AndroidBridgeContext";
+
+// (You can remove the global "declare" and "interface" blocks, 
+// as they are now in AndroidBridgeContext.tsx)
 
 interface ContentDisplayProps {
   content: string;
 }
 
 const ContentDisplay = ({ content }: ContentDisplayProps) => {
+  // --- 2. GET THE BRIDGE STATE FROM THE CONTEXT ---
+  const { isBridgeReady } = useAndroidBridge();
+
   const [currentUtterance, setCurrentUtterance] = useState<SpeechSynthesisUtterance | null>(null);
   const [currentTitle, setCurrentTitle] = useState<string>("");
   const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
 
   useEffect(() => {
     const loadVoices = () => {
-      // Only load web voices if the web API exists
       if (window.speechSynthesis) {
         setVoices(window.speechSynthesis.getVoices());
         window.speechSynthesis.onvoiceschanged = loadVoices;
@@ -37,7 +32,6 @@ const ContentDisplay = ({ content }: ContentDisplayProps) => {
     loadVoices();
 
     return () => {
-      // Stop both web and native speech on cleanup
       if (window.speechSynthesis) {
         window.speechSynthesis.cancel();
         window.speechSynthesis.onvoiceschanged = null;
@@ -57,31 +51,25 @@ const ContentDisplay = ({ content }: ContentDisplayProps) => {
       return;
     }
 
-    // --- MODIFIED LOGIC ---
-    if (window.Android && window.Android.speak) {
-      // 1. NATIVE ANDROID APP
-      if (window.speechSynthesis) window.speechSynthesis.cancel(); // Stop any web speech
-      setCurrentUtterance(null); // Ensure web player is hidden
+    // --- 3. UPDATE THE LOGIC ---
+    if (window.Android && isBridgeReady) {
+      // 1. NATIVE ANDROID APP (and bridge is ready)
+      if (window.speechSynthesis) window.speechSynthesis.cancel();
+      setCurrentUtterance(null);
       setCurrentTitle("");
       
-      // Use the native bridge to speak.
-      // NOTE: Your original code only spoke the 'fullCardText', not the title.
-      // We are preserving that by only speaking the 'text' argument.
-      window.Android.speak(text);
+      window.Android.speak(title + ". " + text);
 
     } else if (window.speechSynthesis) {
-      // 2. WEB BROWSER (This is your original logic, restored)
+      // 2. WEB BROWSER (Your original logic)
       window.speechSynthesis.cancel();
-
       setTimeout(() => {
         const MAX_LENGTH = 4000;
         const truncatedText = text.length > MAX_LENGTH 
           ? text.substring(0, MAX_LENGTH) + "..." 
           : text;
-
-        // Create the utterance as before
-        const utterance = new SpeechSynthesisUtterance(truncatedText);
-
+        const utterance = new SpeechSynthesisUtterance(title + ". " + truncatedText);
+        
         const indianVoice = voices.find(voice =>
           voice.lang.includes('hi') || voice.lang.includes('sa') || voice.name.toLowerCase().includes('indian')
         );
@@ -96,31 +84,29 @@ const ContentDisplay = ({ content }: ContentDisplayProps) => {
         utterance.rate = 0.85;
         utterance.pitch = 1.0;
         utterance.volume = 1.0;
-
         utterance.onerror = (event) => {
           console.error('Speech error:', event);
           setCurrentUtterance(null);
           setCurrentTitle("");
         };
-
-        // The key: JUST set the state. The AudioPlayer component will do the rest.
+        
         setCurrentUtterance(utterance);
         setCurrentTitle(title);
       }, 150);
     } else {
-      // 3. NOT SUPPORTED
+      // 3. NOT SUPPORTED (or bridge not ready yet)
       console.warn("Speech Synthesis not supported in this environment.");
     }
-    // --- END MODIFIED LOGIC ---
+    // --- END LOGIC UPDATE ---
 
-  }, [voices]);
+  }, [voices, isBridgeReady]); // <-- 4. ADD isBridgeReady TO DEPENDENCY ARRAY
 
   const handleSpeechEnd = useCallback(() => {
-    // This is for the web AudioPlayer
     setCurrentUtterance(null);
     setCurrentTitle("");
   }, []);
 
+  // ... (rest of your component's JSX is unchanged)
   return (
     <>
       <div className="space-y-8">
@@ -181,7 +167,6 @@ const ContentDisplay = ({ content }: ContentDisplayProps) => {
         })}
       </div>
 
-      {/* This will ONLY appear in web browsers, which is the original, correct behavior. */}
       {currentUtterance && (
         <AudioPlayer 
           speechUtterance={currentUtterance} 
