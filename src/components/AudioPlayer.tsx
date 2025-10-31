@@ -14,9 +14,27 @@ const AudioPlayer = ({ audioUrl, title, speechUtterance, onSpeechEnd }: AudioPla
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
-  const [isSpeechMode, setIsSpeechMode] = useState(false);
-  const speechProgressInterval = useRef<number>();
+  
+  // --- NEW ---
+  // State to track if we are in native Android mode
+  const [isAndroidMode, setIsAndroidMode] = useState(false);
 
+  // --- NEW ---
+  // Listen for the signal from the Android app
+  useEffect(() => {
+    // This function will be called by the Android app's onPageFinished
+    (window as any).androidBridgeReady = () => {
+      console.log("Android bridge is ready!");
+      setIsAndroidMode(true);
+    };
+
+    // Cleanup
+    return () => {
+      delete (window as any).androidBridgeReady;
+    };
+  }, []);
+  
+  // This is for regular audio files (MP3s)
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
@@ -36,90 +54,86 @@ const AudioPlayer = ({ audioUrl, title, speechUtterance, onSpeechEnd }: AudioPla
     };
   }, []);
 
-  // Handle speech synthesis
+  // Handle speech synthesis (BOTH NATIVE AND WEB)
   useEffect(() => {
-    // --- THIS IS THE CRITICAL SAFETY CHECK ---
-    // Only proceed if speechUtterance exists AND the browser supports speech synthesis
-    if (speechUtterance && window.speechSynthesis) {
-      setIsSpeechMode(true);
-      setCurrentTime(0);
+    if (!speechUtterance) {
+      return;
+    }
 
-      const estimatedDuration = (speechUtterance.text.length / 10) * 1000;
-      setDuration(estimatedDuration / 1000);
-
-      const handleEnd = () => {
-        setIsPlaying(false);
-        if (speechProgressInterval.current) {
-          clearInterval(speechProgressInterval.current);
-        }
-        onSpeechEnd?.();
-      };
-
-      const handleError = (event: SpeechSynthesisErrorEvent) => {
-        console.error('AudioPlayer - Speech error:', event.error);
-        setIsPlaying(false);
-        if (speechProgressInterval.current) {
-          clearInterval(speechProgressInterval.current);
-        }
-        onSpeechEnd?.();
-      };
-
-      speechUtterance.onend = handleEnd;
-      speechUtterance.onerror = handleError;
-
+    // --- UPDATED LOGIC ---
+    // 1. Prioritize Native Android TTS
+    if (isAndroidMode && window.Android) {
+      console.log("Using Native Android TTS");
+      // For native, we don't have progress events, so we just play.
+      // We can keep a simple visual timer if desired.
       setIsPlaying(true);
-      // --- THIS CALL IS NOW SAFE ---
-      window.speechSynthesis.speak(speechUtterance);
-
-      speechProgressInterval.current = window.setInterval(() => {
-        setCurrentTime(prev => {
-          const next = prev + 0.1;
-          return next >= estimatedDuration / 1000 ? estimatedDuration / 1000 : next;
-        });
-      }, 100);
+      window.Android.speak(speechUtterance.text);
+      
+      // Since we don't know when it ends, the onSpeechEnd callback is harder
+      // to trigger accurately without more native code. This is a simplification.
 
       return () => {
-        if (speechProgressInterval.current) {
-          clearInterval(speechProgressInterval.current);
-        }
-        // We also add a safety check here
-        if (window.speechSynthesis) {
-           window.speechSynthesis.cancel();
+        // Stop native speech when component unmounts or utterance changes
+        if (window.Android) {
+          window.Android.stop();
         }
       };
-    } else {
-      setIsSpeechMode(false);
+    } 
+    // 2. Fallback to Web TTS
+    else if (window.speechSynthesis) {
+      console.log("Using Web Browser TTS");
+      setIsPlaying(true);
+      window.speechSynthesis.speak(speechUtterance);
+
+      speechUtterance.onend = () => {
+        setIsPlaying(false);
+        onSpeechEnd?.();
+      };
+
+      speechUtterance.onerror = (event: SpeechSynthesisErrorEvent) => {
+        console.error('Web Speech error:', event.error);
+        setIsPlaying(false);
+        onSpeechEnd?.();
+      };
+      
+      return () => {
+        window.speechSynthesis.cancel();
+      };
     }
-  }, [speechUtterance, onSpeechEnd]);
+    // 3. If neither is available
+    else {
+      console.log("Speech Synthesis not supported in this environment.");
+    }
+    
+  }, [speechUtterance, onSpeechEnd, isAndroidMode]);
 
   const togglePlay = () => {
-    // --- THIS IS THE SECOND CRITICAL SAFETY CHECK ---
-    if (isSpeechMode && speechUtterance && window.speechSynthesis) {
-      if (isPlaying) {
-        window.speechSynthesis.pause();
-        setIsPlaying(false);
-        if (speechProgressInterval.current) {
-          clearInterval(speechProgressInterval.current);
+    // --- UPDATED LOGIC ---
+    if (speechUtterance) {
+      // For native, we can only start/stop, not pause/resume
+      if (isAndroidMode && window.Android) {
+        if (isPlaying) {
+          window.Android.stop();
+          setIsPlaying(false);
+        } else {
+          window.Android.speak(speechUtterance.text);
+          setIsPlaying(true);
         }
-      } else {
-        window.speechSynthesis.resume();
-        setIsPlaying(true);
-
-        if (speechProgressInterval.current) {
-          clearInterval(speechProgressInterval.current);
-        }
-        speechProgressInterval.current = window.setInterval(() => {
-          setCurrentTime(prev => {
-            const next = prev + 0.1;
-            return next >= duration ? duration : next;
-          });
-        }, 100);
       }
-    } else {
-      // This is for regular MP3 audio, which is fine
+      // For web, we can pause/resume
+      else if (window.speechSynthesis) {
+        if (isPlaying) {
+          window.speechSynthesis.pause();
+        } else {
+          window.speechSynthesis.resume();
+        }
+        setIsPlaying(!isPlaying);
+      }
+    }
+    // For regular audio files
+    else {
       const audio = audioRef.current;
       if (!audio) return;
-
       if (isPlaying) {
         audio.pause();
       } else {
@@ -129,8 +143,12 @@ const AudioPlayer = ({ audioUrl, title, speechUtterance, onSpeechEnd }: AudioPla
     }
   };
 
+  // ... (The rest of your component's rendering code remains the same)
+  // ... (handleSeek, formatTime, and the JSX return)
+  
   const handleSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (isSpeechMode) {
+    // Seeking is disabled for both speech modes
+    if (speechUtterance) {
       return;
     }
     
@@ -166,7 +184,7 @@ const AudioPlayer = ({ audioUrl, title, speechUtterance, onSpeechEnd }: AudioPla
             <button
               onClick={togglePlay}
               className="flex items-center justify-center w-10 h-10 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
-              aria-label={isPlaying ? "Pause" : "Play"}
+              aria-label={isPlaying ? "Pause" : "Stop"}
             >
               {isPlaying ? (
                 <Pause className="w-5 h-5" />
@@ -175,7 +193,7 @@ const AudioPlayer = ({ audioUrl, title, speechUtterance, onSpeechEnd }: AudioPla
               )}
             </button>
 
-            {isSpeechMode && (
+            {speechUtterance && (
               <Volume2 className="w-4 h-4 text-primary animate-pulse" />
             )}
 
@@ -183,14 +201,16 @@ const AudioPlayer = ({ audioUrl, title, speechUtterance, onSpeechEnd }: AudioPla
               <p className="text-sm font-medium truncate">{title}</p>
               <div className="flex items-center gap-2 mt-1">
                 <span className="text-xs text-muted-foreground">
-                  {formatTime(currentTime)}
+                  {/* Simplified time for native TTS */}
+                  {formatTime(isAndroidMode && speechUtterance ? 0 : currentTime)}
                 </span>
                 <div className="flex-1 relative h-1 rounded-full bg-muted">
                   <div 
-                    className="absolute h-full bg-primary rounded-full transition-all duration-100"
-                    style={{ width: `${duration > 0 ? (currentTime / duration) * 100 : 0}%` }}
+                    className="absolute h-full bg-primary rounded-full"
+                    // Simplified progress for native TTS
+                    style={{ width: `${ (isAndroidMode && speechUtterance && isPlaying) ? '100%' : (duration > 0 ? (currentTime / duration) * 100 : 0)}%`, transition: (isAndroidMode && speechUtterance) ? 'width 10s linear' : 'width 0.1s linear' }}
                   />
-                  {!isSpeechMode && (
+                  {!(isAndroidMode && speechUtterance) && (
                     <input
                       type="range"
                       min="0"
@@ -202,7 +222,7 @@ const AudioPlayer = ({ audioUrl, title, speechUtterance, onSpeechEnd }: AudioPla
                   )}
                 </div>
                 <span className="text-xs text-muted-foreground">
-                  {formatTime(duration)}
+                  {formatTime(isAndroidMode && speechUtterance ? 0 : duration)}
                 </span>
               </div>
             </div>
