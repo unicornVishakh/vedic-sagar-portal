@@ -152,12 +152,6 @@ const DonationPage = () => {
                   <p className="text-foreground/80">9800924322</p>
                 </div>
               </div>
-
-              <div className="flex gap-4 items-start">
-                <div className="flex-shrink-0 w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-                  <MapPin className="w-6 h-6 text-primary" />
-                </div>
-              </div>
             </div>
 
             {/* Contact Form */}
