@@ -28,7 +28,7 @@ const ContentDisplay = ({ content }: ContentDisplayProps) => {
 
   useEffect(() => {
     const loadVoices = () => {
-      // Add a check here
+      // Add a safety check here
       if (window.speechSynthesis) {
         setVoices(window.speechSynthesis.getVoices());
         window.speechSynthesis.onvoiceschanged = loadVoices;
@@ -37,7 +37,7 @@ const ContentDisplay = ({ content }: ContentDisplayProps) => {
     loadVoices();
 
     return () => {
-      // Add checks here
+      // Add safety checks here
       if (window.speechSynthesis) {
         window.speechSynthesis.cancel();
         window.speechSynthesis.onvoiceschanged = null;
@@ -57,7 +57,7 @@ const ContentDisplay = ({ content }: ContentDisplayProps) => {
       return;
     }
 
-    // --- MODIFIED LOGIC (respects your original functionality) ---
+    // --- MODIFIED LOGIC (This respects your original functionality) ---
     if (window.Android && window.Android.speak) {
       // 1. NATIVE ANDROID APP
       if (window.speechSynthesis) window.speechSynthesis.cancel(); // Stop any web speech
