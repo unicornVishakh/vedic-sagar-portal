@@ -59,26 +59,25 @@ const FestivalDetail = () => {
   }, []);
 
   const handlePlayAudio = (text: string, title: string) => {
+    
     // --- MODIFIED LOGIC ---
     if (window.Android && window.Android.speak) {
       // 1. NATIVE ANDROID APP
-      if (window.speechSynthesis) window.speechSynthesis.cancel(); // Stop any browser speech
-      
-      // Use the native bridge to speak
-      window.Android.speak(title + ". " + text);
-      
-      // Do not show the web AudioPlayer
-      setCurrentUtterance(null);
+      if (window.speechSynthesis) window.speechSynthesis.cancel(); // Stop any web speech
+      setCurrentUtterance(null); // Ensure web player is hidden
       setCurrentTitle("");
+      
+      // Use the native bridge to speak.
+      window.Android.speak(title + ". " + text);
 
     } else if (window.speechSynthesis) {
-      // 2. WEB BROWSER
+      // 2. WEB BROWSER (Original Logic)
       if (window.speechSynthesis.speaking || window.speechSynthesis.pending) {
         window.speechSynthesis.cancel();
       }
       
       setTimeout(() => {
-        const utterance = new SpeechSynthesisUtterance(title + ". " + text);
+        const utterance = new SpeechSynthesisUtterance(text); // Your original code just used `text`
         utterance.lang = 'hi-IN';
         utterance.rate = 0.85;
         utterance.pitch = 1.0;
@@ -92,7 +91,7 @@ const FestivalDetail = () => {
           utterance.voice = indianVoice;
         }
         
-        // This will trigger the AudioPlayer component
+        // The key: JUST set the state. The AudioPlayer component will do the rest.
         setCurrentUtterance(utterance);
         setCurrentTitle(title);
       }, 150);
@@ -104,7 +103,6 @@ const FestivalDetail = () => {
   };
 
   const handleSpeechEnd = () => {
-    // This is for the web AudioPlayer
     if (window.speechSynthesis.speaking || window.speechSynthesis.pending) {
       window.speechSynthesis.cancel();
     }
@@ -113,7 +111,6 @@ const FestivalDetail = () => {
   };
 
   if (mantrasLoading) {
-    // ... (rest of your loading JSX)
     return (
       <div className="container mx-auto px-4 py-12">
         <Skeleton className="h-96 w-full max-w-4xl mx-auto" />
@@ -122,7 +119,6 @@ const FestivalDetail = () => {
   }
 
   if (!mantras || mantras.length === 0) {
-    // ... (rest of your "not found" JSX)
     return (
       <div className="container mx-auto px-4 py-12 text-center">
         <p className="text-muted-foreground">No mantras found for this festival</p>
@@ -135,7 +131,6 @@ const FestivalDetail = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
-      {/* ... (rest of your header/banner JSX) ... */}
       <div className="container mx-auto px-4 py-6">
         <Link to="/festivals">
           <Button variant="ghost" className="mb-4">
@@ -145,6 +140,7 @@ const FestivalDetail = () => {
         </Link>
       </div>
 
+      {/* Title Banner */}
       <div className="bg-gradient-to-r from-primary/10 to-secondary/10 border-y">
         <div className="container mx-auto px-4 py-8">
           <div className="flex items-center justify-center gap-3 mb-2">
@@ -173,7 +169,6 @@ const FestivalDetail = () => {
                     {mantra.mantra_text}
                   </pre>
                 </div>
-                {/* This button will now correctly call the new handlePlayAudio logic */}
                 <Button
                   variant="ghost"
                   size="icon"
@@ -188,7 +183,7 @@ const FestivalDetail = () => {
         </div>
       </div>
 
-      {/* This will now ONLY appear in web browsers, not in the Android app. */}
+      {/* This will ONLY appear in web browsers, which is the original, correct behavior. */}
       {currentUtterance && (
         <AudioPlayer 
           speechUtterance={currentUtterance} 
