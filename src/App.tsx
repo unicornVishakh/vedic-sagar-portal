@@ -16,6 +16,7 @@ import DonateFormPage from "./pages/DonateFormPage";
 import Events from "./pages/Events";
 import EventDetail from "./pages/EventDetail";
 import News from "./pages/News";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
 
 // --- 1. IMPORT THE NEW PROVIDER ---
 import { AndroidBridgeProvider } from './contexts/AndroidBridgeContext';
@@ -43,6 +44,7 @@ const App = () => (
             <Route path="/events" element={<Layout><Events /></Layout>} />
             <Route path="/event/:id" element={<Layout><EventDetail /></Layout>} />
             <Route path="/news" element={<Layout><News /></Layout>} />
+            <Route path="/privacy-policy" element={<Layout><PrivacyPolicy /></Layout>} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

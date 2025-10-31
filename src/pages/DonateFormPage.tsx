@@ -223,7 +223,7 @@ const DonateFormPage = () => {
     setIsSubmitting(true);
 
     try {
-      const { error } = await supabase.from("donations_interest").insert([{
+      const { error } = await supabase.from("donations_interest" as any).insert([{
         donor_name: `${formData.firstName} ${formData.lastName}`.trim(),
         email: formData.email,
         phone: `${selectedCountryCode} ${formData.phone}`,

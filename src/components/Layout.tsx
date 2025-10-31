@@ -56,10 +56,18 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
 
         {/* Footer */}
         <footer className="mt-auto border-t bg-muted/30 py-6">
-          <div className="container mx-auto px-4 text-center">
-            <p className="text-sm text-muted-foreground">
-              Built and Maintained by Neural AI | © {new Date().getFullYear()} Arya Samaj
-            </p>
+          <div className="container mx-auto px-4">
+            <div className="flex flex-col sm:flex-row justify-between items-center gap-2">
+              <p className="text-sm text-muted-foreground">
+                Built and Maintained by Neural AI | © {new Date().getFullYear()} Arya Samaj
+              </p>
+              <Link 
+                to="/privacy-policy" 
+                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Privacy Policy
+              </Link>
+            </div>
           </div>
         </footer>
       </main>
