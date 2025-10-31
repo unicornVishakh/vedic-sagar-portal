@@ -28,7 +28,7 @@ const ContentDisplay = ({ content }: ContentDisplayProps) => {
 
   useEffect(() => {
     const loadVoices = () => {
-      // Add a safety check here
+      // Only load web voices if the web API exists
       if (window.speechSynthesis) {
         setVoices(window.speechSynthesis.getVoices());
         window.speechSynthesis.onvoiceschanged = loadVoices;
@@ -37,7 +37,7 @@ const ContentDisplay = ({ content }: ContentDisplayProps) => {
     loadVoices();
 
     return () => {
-      // Add safety checks here
+      // Stop both web and native speech on cleanup
       if (window.speechSynthesis) {
         window.speechSynthesis.cancel();
         window.speechSynthesis.onvoiceschanged = null;
@@ -57,18 +57,20 @@ const ContentDisplay = ({ content }: ContentDisplayProps) => {
       return;
     }
 
-    // --- MODIFIED LOGIC (This respects your original functionality) ---
+    // --- MODIFIED LOGIC ---
     if (window.Android && window.Android.speak) {
       // 1. NATIVE ANDROID APP
       if (window.speechSynthesis) window.speechSynthesis.cancel(); // Stop any web speech
       setCurrentUtterance(null); // Ensure web player is hidden
       setCurrentTitle("");
       
-      // Use the native bridge to speak the full text
-      window.Android.speak(title + ". " + text);
+      // Use the native bridge to speak.
+      // NOTE: Your original code only spoke the 'fullCardText', not the title.
+      // We are preserving that by only speaking the 'text' argument.
+      window.Android.speak(text);
 
     } else if (window.speechSynthesis) {
-      // 2. WEB BROWSER (Your original, working logic)
+      // 2. WEB BROWSER (This is your original logic, restored)
       window.speechSynthesis.cancel();
 
       setTimeout(() => {
@@ -77,8 +79,8 @@ const ContentDisplay = ({ content }: ContentDisplayProps) => {
           ? text.substring(0, MAX_LENGTH) + "..." 
           : text;
 
-        // Combine title and text
-        const utterance = new SpeechSynthesisUtterance(title + ". " + truncatedText);
+        // Create the utterance as before
+        const utterance = new SpeechSynthesisUtterance(truncatedText);
 
         const indianVoice = voices.find(voice =>
           voice.lang.includes('hi') || voice.lang.includes('sa') || voice.name.toLowerCase().includes('indian')
@@ -101,12 +103,12 @@ const ContentDisplay = ({ content }: ContentDisplayProps) => {
           setCurrentTitle("");
         };
 
-        // Pass to the AudioPlayer component (THIS IS YOUR ORIGINAL LOGIC)
+        // The key: JUST set the state. The AudioPlayer component will do the rest.
         setCurrentUtterance(utterance);
         setCurrentTitle(title);
       }, 150);
     } else {
-      // 3. NOT SUPPORTED (This is what's running right now)
+      // 3. NOT SUPPORTED
       console.warn("Speech Synthesis not supported in this environment.");
     }
     // --- END MODIFIED LOGIC ---
