@@ -14,6 +14,11 @@ const SplashScreen = ({ onComplete }: SplashScreenProps) => {
   const [progress, setProgress] = useState(0);
   const [audioRef] = useState(() => new Audio("/assets/ancient-spirit-echoes-om-chanting-234045.mp3"));
   const [audioStarted, setAudioStarted] = useState(false);
+  const [sliderSoundRef] = useState(() => {
+    const audio = new Audio();
+    // Create a simple click sound using AudioContext
+    return audio;
+  });
 
   // Detect mobile view on mount and resize
   useEffect(() => {
@@ -109,6 +114,28 @@ const SplashScreen = ({ onComplete }: SplashScreenProps) => {
     // Note: No auto-completion on mobile - user must slide
   }, [isMobile, handleComplete]); // Include handleComplete in dependencies
 
+  // Play slider tick sound
+  const playSliderSound = useCallback(() => {
+    try {
+      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      
+      oscillator.frequency.value = 800;
+      oscillator.type = 'sine';
+      gainNode.gain.value = 0.1;
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.05);
+      
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + 0.05);
+    } catch (e) {
+      // Silent fail if audio context not supported
+    }
+  }, []);
+
   // Handle slider movement for mobile
   const handleSliderMove = (clientX: number) => {
     if (!isDragging) return;
@@ -119,6 +146,11 @@ const SplashScreen = ({ onComplete }: SplashScreenProps) => {
     const rect = slider.getBoundingClientRect();
     const maxWidth = rect.width - 60; // Slider width minus handle width
     const newPosition = Math.max(0, Math.min(clientX - rect.left - 30, maxWidth)); // Calculate new position within bounds
+
+    // Play sound on significant movement (every ~20px)
+    if (Math.abs(newPosition - sliderPosition) > 20) {
+      playSliderSound();
+    }
 
     setSliderPosition(newPosition);
 
