@@ -5,12 +5,13 @@ import { Banner } from "@/components/ui/banner";
 import { Heart, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 const MainPage = () => {
   const { data: sections, isLoading } = useContentSections();
   const navigate = useNavigate();
   const [showBanner, setShowBanner] = useState(true);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   // Audio Playback Logic
   useEffect(() => {
@@ -19,19 +20,52 @@ const MainPage = () => {
     if (!hasPlayed) {
       // Create audio instance with the specific file
       const audio = new Audio("/assets/WhatsApp%20Video%202026-01-03%20at%2019.05.23.mp3");
-      audio.loop = false; // Ensure it plays only once
-      
-      // Attempt to play
+      audio.loop = false; // Play only once
+      audio.volume = 1.0; // Ensure full volume
+      audioRef.current = audio;
+
+      const playWithUserInteraction = () => {
+        audio.play()
+          .then(() => {
+            // Success! Mark as played
+            sessionStorage.setItem("homeAudioPlayed", "true");
+            // Remove listeners immediately so it doesn't try again
+            cleanupListeners();
+          })
+          .catch((e) => {
+            console.log("Audio play failed even after interaction:", e);
+          });
+      };
+
+      const cleanupListeners = () => {
+        document.removeEventListener('click', playWithUserInteraction);
+        document.removeEventListener('touchstart', playWithUserInteraction);
+        document.removeEventListener('keydown', playWithUserInteraction);
+        document.removeEventListener('scroll', playWithUserInteraction);
+      };
+
+      // 1. Try to play automatically first
       audio.play()
         .then(() => {
-          // Mark as played only if successful
           sessionStorage.setItem("homeAudioPlayed", "true");
         })
         .catch((err) => {
-          console.log("Autoplay prevented:", err);
-          // Note: If autoplay is blocked by the browser, it might require user interaction. 
-          // However, since the user comes from the SplashScreen, interaction usually exists.
+          console.log("Autoplay blocked (expected behavior), waiting for user interaction...", err);
+          // 2. If blocked, wait for ANY user interaction to start it
+          document.addEventListener('click', playWithUserInteraction);
+          document.addEventListener('touchstart', playWithUserInteraction);
+          document.addEventListener('keydown', playWithUserInteraction);
+          document.addEventListener('scroll', playWithUserInteraction);
         });
+
+      // Cleanup if component unmounts
+      return () => {
+        cleanupListeners();
+        if (audioRef.current) {
+          audioRef.current.pause();
+          audioRef.current = null;
+        }
+      };
     }
   }, []);
 
@@ -44,6 +78,7 @@ const MainPage = () => {
           autoPlay
           loop
           muted
+          playsInline
           className="w-full h-full object-cover"
         />
         <div className="absolute inset-0 bg-black/30" />
