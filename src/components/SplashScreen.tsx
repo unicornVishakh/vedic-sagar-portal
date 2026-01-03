@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { ChevronRight } from "lucide-react";
+// Removed Prism import
 
 interface SplashScreenProps {
   onComplete?: () => void;
@@ -11,10 +12,13 @@ const SplashScreen = ({ onComplete }: SplashScreenProps) => {
   const [sliderPosition, setSliderPosition] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const [progress, setProgress] = useState(0);
-  
-  // UPDATED: Pointing to the new audio file (URL encoded for spaces)
-  const [audioRef] = useState(() => new Audio("/assets/WhatsApp%20Video%202026-01-03%20at%2019.05.23.mp3"));
+  const [audioRef] = useState(() => new Audio("/assets/ancient-spirit-echoes-om-chanting-234045.mp3"));
   const [audioStarted, setAudioStarted] = useState(false);
+  const [sliderSoundRef] = useState(() => {
+    const audio = new Audio();
+    // Create a simple click sound using AudioContext
+    return audio;
+  });
 
   // Detect mobile view on mount and resize
   useEffect(() => {
@@ -28,9 +32,8 @@ const SplashScreen = ({ onComplete }: SplashScreenProps) => {
 
   // Setup audio on mount - aggressive autoplay
   useEffect(() => {
-    // UPDATED: User requested "play only once", so loop is disabled
-    audioRef.loop = false; 
-    audioRef.volume = 1.0; // Ensure volume is audible
+    audioRef.loop = true;
+    audioRef.volume = 0.5;
     
     const attemptPlay = async () => {
       try {
@@ -45,12 +48,11 @@ const SplashScreen = ({ onComplete }: SplashScreenProps) => {
     // Try immediately
     attemptPlay();
     
-    // Also try on any document interaction (backup if autoplay is blocked)
+    // Also try on any document interaction
     const handleInteraction = async () => {
       if (!audioStarted) {
         const success = await attemptPlay();
         if (success) {
-          // Remove listeners once played
           document.removeEventListener('click', handleInteraction);
           document.removeEventListener('touchstart', handleInteraction);
           document.removeEventListener('scroll', handleInteraction);
@@ -74,12 +76,12 @@ const SplashScreen = ({ onComplete }: SplashScreenProps) => {
     };
   }, [audioRef, audioStarted]);
 
-  // Handle audio playback on specific screen interaction (redundant backup)
+  // Handle audio playback on first user interaction (for mobile)
   const handleScreenInteraction = async () => {
     if (!audioStarted) {
       try {
         audioRef.muted = false;
-        audioRef.volume = 1.0;
+        audioRef.volume = 0.5;
         await audioRef.play();
         setAudioStarted(true);
       } catch (error) {
@@ -107,18 +109,19 @@ const SplashScreen = ({ onComplete }: SplashScreenProps) => {
         setProgress((prev) => {
           if (prev >= 100) {
             clearInterval(interval);
-            handleComplete();
+            handleComplete(); // Call completion handler
             return 100;
           }
-          return prev + 2;
+          return prev + 2; // Increment progress
         });
-      }, 60);
+      }, 60); // Adjust interval timing as needed (~3 seconds total)
 
-      return () => clearInterval(interval);
+      return () => clearInterval(interval); // Cleanup interval on unmount
     }
-  }, [isMobile, handleComplete]);
+    // Note: No auto-completion on mobile - user must slide
+  }, [isMobile, handleComplete]); // Include handleComplete in dependencies
 
-  // Play slider tick sound (Optional: kept for slider UI feedback)
+  // Play slider tick sound
   const playSliderSound = useCallback(() => {
     try {
       const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
@@ -136,7 +139,7 @@ const SplashScreen = ({ onComplete }: SplashScreenProps) => {
       oscillator.start(audioContext.currentTime);
       oscillator.stop(audioContext.currentTime + 0.05);
     } catch (e) {
-      // Silent fail
+      // Silent fail if audio context not supported
     }
   }, []);
 
@@ -148,45 +151,53 @@ const SplashScreen = ({ onComplete }: SplashScreenProps) => {
     if (!slider) return;
 
     const rect = slider.getBoundingClientRect();
-    const maxWidth = rect.width - 60;
-    const newPosition = Math.max(0, Math.min(clientX - rect.left - 30, maxWidth));
+    const maxWidth = rect.width - 60; // Slider width minus handle width
+    const newPosition = Math.max(0, Math.min(clientX - rect.left - 30, maxWidth)); // Calculate new position within bounds
 
+    // Play sound on significant movement (every ~20px)
     if (Math.abs(newPosition - sliderPosition) > 20) {
       playSliderSound();
     }
 
     setSliderPosition(newPosition);
 
+    // Trigger completion if slider reaches near the end
     if (newPosition >= maxWidth * 0.95) {
-      setIsDragging(false);
-      handleComplete();
+      setIsDragging(false); // Stop dragging
+      handleComplete(); // Call completion handler
     }
   };
 
+  // Start dragging on mouse down or touch start
   const handleMouseDown = (e: React.MouseEvent | React.TouchEvent) => {
-      e.preventDefault();
+      e.preventDefault(); // Prevent text selection during drag
       setIsDragging(true);
   };
 
+  // Stop dragging and potentially reset slider on mouse up, leave, or touch end
   const handleMouseUp = () => {
     if (isDragging) {
       setIsDragging(false);
       const slider = document.getElementById("splash-slider");
-      const maxWidth = slider ? slider.getBoundingClientRect().width - 60 : 200;
+      const maxWidth = slider ? slider.getBoundingClientRect().width - 60 : 200; // Recalculate maxWidth safely
+       // Check if completion threshold was met *before* resetting
        if (sliderPosition < maxWidth * 0.95) {
+         // Use setTimeout to allow visual completion before snapping back
          setTimeout(() => setSliderPosition(0), 50);
        }
     }
   };
 
+  // Handle touch movement
   const handleTouchMove = (e: React.TouchEvent) => {
     if (isDragging) {
       handleSliderMove(e.touches[0].clientX);
     }
   };
 
+  // Handle mouse movement (only when dragging)
   const handleMouseMove = (e: React.MouseEvent) => {
-     if (isDragging) {
+     if (isDragging) { // Ensure dragging has started
         handleSliderMove(e.clientX);
      }
   };
@@ -194,7 +205,7 @@ const SplashScreen = ({ onComplete }: SplashScreenProps) => {
   return (
     <div
       className={`fixed inset-0 z-50 flex flex-col items-center justify-between bg-gradient-to-b from-background to-white px-6 py-12 transition-opacity duration-500 ${
-        isVisible ? "opacity-100" : "opacity-0 pointer-events-none"
+        isVisible ? "opacity-100" : "opacity-0 pointer-events-none" // Fade out and disable interaction when hidden
       }`}
       onClick={handleScreenInteraction}
       onTouchStart={handleScreenInteraction}
@@ -202,37 +213,39 @@ const SplashScreen = ({ onComplete }: SplashScreenProps) => {
       {/* Top Section: Om Symbol Image */}
       <div className="flex-1 flex items-center justify-center pt-8">
         <img
-          src="/assets/O3m_AryaSamaj.png"
+          src="/assets/O3m_AryaSamaj.png" // Use the Ohm image
           alt="Ohm Symbol"
-          className="h-24 w-auto md:h-32"
+          className="h-24 w-auto md:h-32" // Adjust size as needed
         />
       </div>
 
       {/* Middle Section: Rishi Image */}
-      <div className="flex-1 flex items-center justify-center w-full max-w-sm px-4">
-        <div className="w-full h-full aspect-square relative flex items-center justify-center">
+      <div className="flex-1 flex items-center justify-center w-full max-w-sm px-4"> {/* Adjusted max-w */}
+        <div className="w-full h-full aspect-square relative flex items-center justify-center"> {/* Use full container size */}
+          {/* Rishi Image - Ensure rishi-yagya-loop.jpg is in public/assets/ */}
           <img
-            src="/assets/task_01k8m963hwfngaxjxj1nf2t5j7_1761617406_img_1.webp"
+            src="/assets/task_01k8m963hwfngaxjxj1nf2t5j7_1761617406_img_1.webp" // Using the JPG file name
             alt="Rishi performing Yagya"
-            className="w-56 h-56 md:w-80 md:h-80 object-contain pointer-events-none rounded-full"
-            style={{ imageRendering: 'pixelated' }}
+            className="w-56 h-56 md:w-80 md:h-80 object-contain pointer-events-none rounded-full" // Increased size significantly
+            style={{ imageRendering: 'pixelated' }} // Optional: Keeps sharp edges
           />
         </div>
       </div>
 
       {/* Bottom Section: Slider or Loading Bar */}
-      <div className="w-full max-w-md px-4 mb-6">
+      <div className="w-full max-w-md px-4 mb-6"> {/* Reduced bottom margin */}
         {isMobile ? (
           <div
             id="splash-slider"
-            className="relative h-16 bg-secondary/20 rounded-full overflow-hidden cursor-grab active:cursor-grabbing select-none"
+            className="relative h-16 bg-secondary/20 rounded-full overflow-hidden cursor-grab active:cursor-grabbing select-none" // Added select-none
              onMouseUp={handleMouseUp}
-             onMouseLeave={handleMouseUp}
+             onMouseLeave={handleMouseUp} // Reset if mouse leaves slider
              onTouchEnd={handleMouseUp}
+             // MouseMove is handled by the handle below
           >
             {/* Background fill */}
             <div
-              className="absolute inset-y-0 left-0 bg-primary/30 rounded-full transition-width duration-100 ease-linear"
+              className="absolute inset-y-0 left-0 bg-primary/30 rounded-full transition-width duration-100 ease-linear" // Use transition-width
               style={{ width: `${sliderPosition + 60}px` }}
             />
              {/* Draggable Handle */}
@@ -242,7 +255,7 @@ const SplashScreen = ({ onComplete }: SplashScreenProps) => {
               onMouseDown={handleMouseDown}
               onTouchStart={handleMouseDown}
               onTouchMove={handleTouchMove}
-              onMouseMove={handleMouseMove}
+              onMouseMove={handleMouseMove} // Handle mouse move specifically on the handle
             >
               <ChevronRight className="w-8 h-8 text-primary-foreground" />
             </div>
@@ -250,13 +263,14 @@ const SplashScreen = ({ onComplete }: SplashScreenProps) => {
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
               <span
                  className="text-sm font-medium text-muted-foreground transition-opacity duration-200"
-                 style={{ opacity: sliderPosition > 10 ? 0 : 1 }}
+                 style={{ opacity: sliderPosition > 10 ? 0 : 1 }} // Fade out text as slider moves
               >
                 Slide to Enter
               </span>
             </div>
           </div>
         ) : (
+           // Desktop Loading Bar
           <div className="h-2 bg-secondary/20 rounded-full overflow-hidden">
             <div
               className="h-full bg-primary transition-all duration-300 ease-linear"
@@ -267,14 +281,14 @@ const SplashScreen = ({ onComplete }: SplashScreenProps) => {
       </div>
 
        {/* Footer Text */}
-      <div className="flex flex-col items-center justify-center gap-2 pb-4">
-        <div className="flex items-center gap-2">
+      <div className="flex flex-col items-center justify-center gap-2 pb-4"> {/* Adjusted gap */}
+        <div className="flex items-center gap-2"> {/* New flex container for logo and text */}
             <img
-                src="/assets/download.png"
+                src="/assets/download.png" // Use the Arya Samaj logo image
                 alt="Arya Samaj Logo"
-                className="h-10 w-auto md:h-12"
+                className="h-10 w-auto md:h-12" // Adjust size
             />
-            <h2 className="text-3xl md:text-4xl font-bold text-secondary">ARYA SAMAJ</h2>
+            <h2 className="text-3xl md:text-4xl font-bold text-secondary">ARYA SAMAJ</h2> {/* Added Text */}
         </div>
         <p className="text-xs text-muted-foreground">Built and Maintained by Neural AI</p>
       </div>
