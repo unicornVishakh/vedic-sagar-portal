@@ -101,17 +101,17 @@ const BhajanList = () => {
                 )}
               </div>
 
-              <div className="pt-4 relative px-4 flex-1">
+              <div className="pt-4 relative px-4 flex-1 overflow-auto max-h-[50vh]">
                 <motion.div
                   layout
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
-                  className="text-sm h-40 md:h-fit pb-4 flex flex-col gap-4 overflow-auto [mask:linear-gradient(to_bottom,white,white,transparent)] [scrollbar-width:none] [-ms-overflow-style:none] [-webkit-overflow-scrolling:touch]"
+                  className="text-sm pb-4 flex flex-col gap-4"
                 >
-                  <pre className="whitespace-pre-wrap font-sans text-sm leading-relaxed">
+                  <div className="whitespace-pre-wrap font-sans text-sm leading-relaxed">
                     {active.lyrics}
-                  </pre>
+                  </div>
                 </motion.div>
               </div>
 
