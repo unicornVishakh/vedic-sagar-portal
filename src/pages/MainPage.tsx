@@ -5,12 +5,35 @@ import { Banner } from "@/components/ui/banner";
 import { Heart, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 const MainPage = () => {
   const { data: sections, isLoading } = useContentSections();
   const navigate = useNavigate();
   const [showBanner, setShowBanner] = useState(true);
+
+  // Audio Playback Logic
+  useEffect(() => {
+    const hasPlayed = sessionStorage.getItem("homeAudioPlayed");
+
+    if (!hasPlayed) {
+      // Create audio instance with the specific file
+      const audio = new Audio("/assets/WhatsApp%20Video%202026-01-03%20at%2019.05.23.mp3");
+      audio.loop = false; // Ensure it plays only once
+      
+      // Attempt to play
+      audio.play()
+        .then(() => {
+          // Mark as played only if successful
+          sessionStorage.setItem("homeAudioPlayed", "true");
+        })
+        .catch((err) => {
+          console.log("Autoplay prevented:", err);
+          // Note: If autoplay is blocked by the browser, it might require user interaction. 
+          // However, since the user comes from the SplashScreen, interaction usually exists.
+        });
+    }
+  }, []);
 
   return (
     <div className="min-h-screen">
