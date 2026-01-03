@@ -157,9 +157,9 @@ const ContentDisplay = ({ content }: ContentDisplayProps) => {
                   </div>
                   
                   {cardContent && (
-                    <pre className="whitespace-pre-wrap font-sans text-base leading-relaxed text-foreground/90 mb-4">
+                    <div className="whitespace-pre-wrap font-sans text-base leading-relaxed text-foreground mb-4">
                       {cardContent}
-                    </pre>
+                    </div>
                   )}
 
                   {sections.slice(1).map((section, idx) => {
@@ -168,9 +168,9 @@ const ContentDisplay = ({ content }: ContentDisplayProps) => {
 
                     return (
                       <div key={idx} className="py-4 border-t">
-                        <pre className="whitespace-pre-wrap font-sans text-base leading-relaxed text-foreground/90">
+                        <div className="whitespace-pre-wrap font-sans text-base leading-relaxed text-foreground">
                           {trimmedSection}
-                        </pre>
+                        </div>
                       </div>
                     );
                   })}
