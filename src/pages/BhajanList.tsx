@@ -101,7 +101,7 @@ const BhajanList = () => {
                 )}
               </div>
 
-              <div className="pt-4 relative px-4 flex-1 overflow-auto max-h-[50vh]">
+              <div className="pt-4 relative px-4 flex-1 overflow-auto pb-20">
                 <motion.div
                   layout
                   initial={{ opacity: 0 }}
@@ -115,7 +115,7 @@ const BhajanList = () => {
                 </motion.div>
               </div>
 
-              <div className="p-4 border-t">
+              <div className="absolute bottom-0 left-0 right-0 p-4 border-t bg-card">
                 <motion.button
                   onClick={() => handleViewFull(active.bhajan_id)}
                   className="w-full px-4 py-3 text-sm rounded-full font-bold bg-primary text-primary-foreground hover:bg-primary/90 transition-colors flex items-center justify-center gap-2"
