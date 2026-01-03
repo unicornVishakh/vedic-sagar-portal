@@ -30,44 +30,51 @@ const SplashScreen = ({ onComplete }: SplashScreenProps) => {
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
-  // Setup audio on mount
+  // Setup audio on mount - aggressive autoplay
   useEffect(() => {
     audioRef.loop = true;
     audioRef.volume = 0.5;
     
-    const playAudio = async () => {
+    const attemptPlay = async () => {
       try {
-        audioRef.muted = false;
         await audioRef.play();
         setAudioStarted(true);
-      } catch (error) {
-        // If autoplay fails, try with muted first then unmute
-        try {
-          audioRef.muted = true;
-          await audioRef.play();
-          // Unmute after a short delay
-          setTimeout(() => {
-            audioRef.muted = false;
-          }, 100);
-          setAudioStarted(true);
-        } catch (e) {
-          console.log("Audio autoplay prevented - will play on user interaction");
-          setAudioStarted(false);
+        return true;
+      } catch {
+        return false;
+      }
+    };
+    
+    // Try immediately
+    attemptPlay();
+    
+    // Also try on any document interaction
+    const handleInteraction = async () => {
+      if (!audioStarted) {
+        const success = await attemptPlay();
+        if (success) {
+          document.removeEventListener('click', handleInteraction);
+          document.removeEventListener('touchstart', handleInteraction);
+          document.removeEventListener('scroll', handleInteraction);
+          document.removeEventListener('keydown', handleInteraction);
         }
       }
     };
     
-    // Delay audio start slightly to ensure DOM is ready
-    const timer = setTimeout(() => {
-      playAudio();
-    }, 100);
+    document.addEventListener('click', handleInteraction);
+    document.addEventListener('touchstart', handleInteraction);
+    document.addEventListener('scroll', handleInteraction);
+    document.addEventListener('keydown', handleInteraction);
     
     return () => {
-      clearTimeout(timer);
       audioRef.pause();
       audioRef.currentTime = 0;
+      document.removeEventListener('click', handleInteraction);
+      document.removeEventListener('touchstart', handleInteraction);
+      document.removeEventListener('scroll', handleInteraction);
+      document.removeEventListener('keydown', handleInteraction);
     };
-  }, [audioRef, isMobile]);
+  }, [audioRef, audioStarted]);
 
   // Handle audio playback on first user interaction (for mobile)
   const handleScreenInteraction = async () => {
