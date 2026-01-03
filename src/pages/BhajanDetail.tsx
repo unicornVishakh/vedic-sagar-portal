@@ -54,10 +54,10 @@ const BhajanDetail = () => {
         </div>
 
         {/* Content Body */}
-        <div className="flex-1 container mx-auto px-4 py-8 max-w-4xl">
-          <pre className="whitespace-pre-wrap font-sans text-base leading-relaxed">
+        <div className="flex-1 container mx-auto px-4 py-8 max-w-4xl overflow-visible">
+          <div className="whitespace-pre-wrap font-sans text-base leading-relaxed break-words">
             {bhajan.lyrics}
-          </pre>
+          </div>
         </div>
       </div>
 

@@ -95,6 +95,126 @@ export type Database = {
         }
         Relationships: []
       }
+      donations: {
+        Row: {
+          address: string
+          amount: number
+          city: string
+          country: string
+          created_at: string
+          donation_id: string
+          donation_type: string
+          donor_name: string
+          email: string
+          message: string | null
+          pan_number: string | null
+          payment_method: string
+          phone: string
+          state: string
+          status: string
+          zip_code: string
+        }
+        Insert: {
+          address: string
+          amount: number
+          city: string
+          country?: string
+          created_at?: string
+          donation_id?: string
+          donation_type: string
+          donor_name: string
+          email: string
+          message?: string | null
+          pan_number?: string | null
+          payment_method: string
+          phone: string
+          state: string
+          status?: string
+          zip_code: string
+        }
+        Update: {
+          address?: string
+          amount?: number
+          city?: string
+          country?: string
+          created_at?: string
+          donation_id?: string
+          donation_type?: string
+          donor_name?: string
+          email?: string
+          message?: string | null
+          pan_number?: string | null
+          payment_method?: string
+          phone?: string
+          state?: string
+          status?: string
+          zip_code?: string
+        }
+        Relationships: []
+      }
+      donations_interest: {
+        Row: {
+          amount: number | null
+          created_at: string | null
+          donor_name: string | null
+          email: string | null
+          id: number
+          phone: string | null
+        }
+        Insert: {
+          amount?: number | null
+          created_at?: string | null
+          donor_name?: string | null
+          email?: string | null
+          id?: never
+          phone?: string | null
+        }
+        Update: {
+          amount?: number | null
+          created_at?: string | null
+          donor_name?: string | null
+          email?: string | null
+          id?: never
+          phone?: string | null
+        }
+        Relationships: []
+      }
+      events: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          end_time: string | null
+          id: number
+          image_url: string | null
+          link: string | null
+          location: string | null
+          start_time: string
+          title: string
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          end_time?: string | null
+          id?: number
+          image_url?: string | null
+          link?: string | null
+          location?: string | null
+          start_time: string
+          title: string
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          end_time?: string | null
+          id?: number
+          image_url?: string | null
+          link?: string | null
+          location?: string | null
+          start_time?: string
+          title?: string
+        }
+        Relationships: []
+      }
       festival_mantras: {
         Row: {
           display_order: number
@@ -166,6 +286,36 @@ export type Database = {
           display_order?: number
           image_url?: string
           photo_id?: number
+        }
+        Relationships: []
+      }
+      news: {
+        Row: {
+          author: string | null
+          content: string | null
+          id: number
+          image_url: string | null
+          link: string | null
+          published_at: string | null
+          title: string
+        }
+        Insert: {
+          author?: string | null
+          content?: string | null
+          id?: number
+          image_url?: string | null
+          link?: string | null
+          published_at?: string | null
+          title: string
+        }
+        Update: {
+          author?: string | null
+          content?: string | null
+          id?: number
+          image_url?: string | null
+          link?: string | null
+          published_at?: string | null
+          title?: string
         }
         Relationships: []
       }
