@@ -2,17 +2,50 @@ import ContentBlock from "@/components/ContentBlock";
 import { useContentSections } from "@/hooks/useSupabaseQuery";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Banner } from "@/components/ui/banner";
-import { Heart, ArrowRight } from "lucide-react";
+import { Heart, ArrowRight, Volume2, VolumeX } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 
 const MainPage = () => {
   const { data: sections, isLoading } = useContentSections();
   const navigate = useNavigate();
   const [showBanner, setShowBanner] = useState(true);
+  const [isMuted, setIsMuted] = useState(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  // Removed duplicate audio playback - audio now only plays on splash screen
+  // Auto-play background audio
+  useEffect(() => {
+    const audio = new Audio("/assets/ancient-spirit-echoes-om-chanting-234045.mp3");
+    audio.loop = true;
+    audio.volume = 0.3;
+    audioRef.current = audio;
+
+    const playAudio = () => {
+      audio.play().catch(() => {});
+    };
+
+    // Try to play immediately
+    playAudio();
+
+    // Also try on user interaction
+    const events = ['click', 'touchstart', 'scroll', 'keydown'];
+    events.forEach(event => document.addEventListener(event, playAudio, { once: true }));
+
+    return () => {
+      audio.pause();
+      audio.src = '';
+      audioRef.current = null;
+      events.forEach(event => document.removeEventListener(event, playAudio));
+    };
+  }, []);
+
+  const toggleMute = useCallback(() => {
+    if (audioRef.current) {
+      audioRef.current.muted = !isMuted;
+      setIsMuted(!isMuted);
+    }
+  }, [isMuted]);
 
   return (
     <div className="min-h-screen">
@@ -54,6 +87,15 @@ const MainPage = () => {
             />
           </div>
         )}
+        
+        {/* Mute button */}
+        <button
+          onClick={toggleMute}
+          className="absolute bottom-4 right-4 p-2 bg-black/50 rounded-full text-white hover:bg-black/70 transition-colors z-10"
+          aria-label={isMuted ? "Unmute" : "Mute"}
+        >
+          {isMuted ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
+        </button>
       </div>
 
       {/* Content Sections */}
