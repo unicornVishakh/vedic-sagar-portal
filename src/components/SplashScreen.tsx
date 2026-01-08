@@ -132,27 +132,39 @@ const SplashScreen = ({ onComplete }: SplashScreenProps) => {
     // Note: No auto-completion on mobile - user must slide
   }, [isMobile, handleComplete]); // Include handleComplete in dependencies
 
-  // Play slider tick sound
+  // Play slider tick sound - use ref to throttle
+  const lastSoundPositionRef = useRef(0);
+  const audioContextRef = useRef<AudioContext | null>(null);
+  
   const playSliderSound = useCallback(() => {
+    if (isMuted) return;
     try {
-      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      // Reuse audio context for better performance
+      if (!audioContextRef.current) {
+        audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
+      }
+      const audioContext = audioContextRef.current;
+      if (audioContext.state === 'suspended') {
+        audioContext.resume();
+      }
+      
       const oscillator = audioContext.createOscillator();
       const gainNode = audioContext.createGain();
       
       oscillator.connect(gainNode);
       gainNode.connect(audioContext.destination);
       
-      oscillator.frequency.value = 800;
+      oscillator.frequency.value = 1000;
       oscillator.type = 'sine';
-      gainNode.gain.value = 0.1;
-      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.05);
+      gainNode.gain.value = 0.15;
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.04);
       
       oscillator.start(audioContext.currentTime);
-      oscillator.stop(audioContext.currentTime + 0.05);
+      oscillator.stop(audioContext.currentTime + 0.04);
     } catch (e) {
       // Silent fail if audio context not supported
     }
-  }, []);
+  }, [isMuted]);
 
   // Handle slider movement for mobile
   const handleSliderMove = (clientX: number) => {
@@ -165,9 +177,10 @@ const SplashScreen = ({ onComplete }: SplashScreenProps) => {
     const maxWidth = rect.width - 60; // Slider width minus handle width
     const newPosition = Math.max(0, Math.min(clientX - rect.left - 30, maxWidth)); // Calculate new position within bounds
 
-    // Play sound on significant movement (every ~20px)
-    if (Math.abs(newPosition - sliderPosition) > 20) {
+    // Play sound on movement (every ~15px for more responsive feedback)
+    if (Math.abs(newPosition - lastSoundPositionRef.current) > 15) {
       playSliderSound();
+      lastSoundPositionRef.current = newPosition;
     }
 
     setSliderPosition(newPosition);
