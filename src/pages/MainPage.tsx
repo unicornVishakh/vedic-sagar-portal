@@ -22,7 +22,9 @@ const MainPage = () => {
     audioRef.current = audio;
 
     const playAudio = () => {
-      audio.play().catch(() => {});
+      if (!document.hidden) {
+        audio.play().catch(() => {});
+      }
     };
 
     // Try to play immediately
@@ -32,11 +34,22 @@ const MainPage = () => {
     const events = ['click', 'touchstart', 'scroll', 'keydown'];
     events.forEach(event => document.addEventListener(event, playAudio, { once: true }));
 
+    // Pause when app is minimized or phone is locked
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        audio.pause();
+      } else {
+        audio.play().catch(() => {});
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
     return () => {
       audio.pause();
       audio.src = '';
       audioRef.current = null;
       events.forEach(event => document.removeEventListener(event, playAudio));
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   }, []);
 
