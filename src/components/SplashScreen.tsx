@@ -49,14 +49,14 @@ const SplashScreen = ({ onComplete }: SplashScreenProps) => {
     };
   }, []);
 
-  // Setup audio autoplay
+  // Setup audio autoplay and visibility handling
   useEffect(() => {
     if (!audioRef.current || audioStarted) return;
     
     const audio = audioRef.current;
     
     const attemptPlay = async () => {
-      if (isCompletedRef.current) return false;
+      if (isCompletedRef.current || document.hidden) return false;
       try {
         await audio.play();
         setAudioStarted(true);
@@ -84,6 +84,21 @@ const SplashScreen = ({ onComplete }: SplashScreenProps) => {
       document.removeEventListener('click', handleInteraction);
       document.removeEventListener('touchstart', handleInteraction);
     };
+  }, [audioStarted]);
+
+  // Pause audio when app is minimized or phone is locked
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (!audioRef.current) return;
+      if (document.hidden) {
+        audioRef.current.pause();
+      } else if (audioStarted && !isCompletedRef.current) {
+        audioRef.current.play().catch(() => {});
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
   }, [audioStarted]);
 
   // Toggle mute
