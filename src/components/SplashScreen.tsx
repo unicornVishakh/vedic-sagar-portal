@@ -1,6 +1,5 @@
-import React, { useEffect, useState, useCallback } from "react";
-import { ChevronRight } from "lucide-react";
-// Removed Prism import
+import React, { useEffect, useState, useCallback, useRef } from "react";
+import { ChevronRight, Volume2, VolumeX } from "lucide-react";
 
 interface SplashScreenProps {
   onComplete?: () => void;
@@ -8,36 +7,58 @@ interface SplashScreenProps {
 
 const SplashScreen = ({ onComplete }: SplashScreenProps) => {
   const [isVisible, setIsVisible] = useState(true);
-  const [isMobile, setIsMobile] = useState(false);
+  const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768);
   const [sliderPosition, setSliderPosition] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const [progress, setProgress] = useState(0);
-  const [audioRef] = useState(() => new Audio("/assets/ancient-spirit-echoes-om-chanting-234045.mp3"));
+  const [isMuted, setIsMuted] = useState(false);
   const [audioStarted, setAudioStarted] = useState(false);
-  const [sliderSoundRef] = useState(() => {
-    const audio = new Audio();
-    // Create a simple click sound using AudioContext
-    return audio;
-  });
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const isCompletedRef = useRef(false);
 
-  // Detect mobile view on mount and resize
+  // Initialize audio only once
   useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
+    const audio = new Audio("/assets/ancient-spirit-echoes-om-chanting-234045.mp3");
+    audio.loop = true;
+    audio.volume = 0.5;
+    audioRef.current = audio;
+    
+    return () => {
+      // Ensure complete cleanup on unmount
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.src = '';
+        audioRef.current = null;
+      }
     };
-    checkMobile();
-    window.addEventListener("resize", checkMobile);
-    return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
-  // Setup audio on mount - aggressive autoplay
+  // Detect mobile view on mount and resize - debounced
   useEffect(() => {
-    audioRef.loop = true;
-    audioRef.volume = 0.5;
+    let timeoutId: NodeJS.Timeout;
+    const checkMobile = () => {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        setIsMobile(window.innerWidth < 768);
+      }, 100);
+    };
+    window.addEventListener("resize", checkMobile);
+    return () => {
+      window.removeEventListener("resize", checkMobile);
+      clearTimeout(timeoutId);
+    };
+  }, []);
+
+  // Setup audio autoplay
+  useEffect(() => {
+    if (!audioRef.current || audioStarted) return;
+    
+    const audio = audioRef.current;
     
     const attemptPlay = async () => {
+      if (isCompletedRef.current) return false;
       try {
-        await audioRef.play();
+        await audio.play();
         setAudioStarted(true);
         return true;
       } catch {
@@ -45,62 +66,52 @@ const SplashScreen = ({ onComplete }: SplashScreenProps) => {
       }
     };
     
-    // Try immediately
     attemptPlay();
     
-    // Also try on any document interaction
     const handleInteraction = async () => {
-      if (!audioStarted) {
-        const success = await attemptPlay();
-        if (success) {
-          document.removeEventListener('click', handleInteraction);
-          document.removeEventListener('touchstart', handleInteraction);
-          document.removeEventListener('scroll', handleInteraction);
-          document.removeEventListener('keydown', handleInteraction);
-        }
+      if (isCompletedRef.current) return;
+      const success = await attemptPlay();
+      if (success) {
+        document.removeEventListener('click', handleInteraction);
+        document.removeEventListener('touchstart', handleInteraction);
       }
     };
     
-    document.addEventListener('click', handleInteraction);
-    document.addEventListener('touchstart', handleInteraction);
-    document.addEventListener('scroll', handleInteraction);
-    document.addEventListener('keydown', handleInteraction);
+    document.addEventListener('click', handleInteraction, { passive: true });
+    document.addEventListener('touchstart', handleInteraction, { passive: true });
     
     return () => {
-      audioRef.pause();
-      audioRef.currentTime = 0;
       document.removeEventListener('click', handleInteraction);
       document.removeEventListener('touchstart', handleInteraction);
-      document.removeEventListener('scroll', handleInteraction);
-      document.removeEventListener('keydown', handleInteraction);
     };
-  }, [audioRef, audioStarted]);
+  }, [audioStarted]);
 
-  // Handle audio playback on first user interaction (for mobile)
-  const handleScreenInteraction = async () => {
-    if (!audioStarted) {
-      try {
-        audioRef.muted = false;
-        audioRef.volume = 0.5;
-        await audioRef.play();
-        setAudioStarted(true);
-      } catch (error) {
-        console.log("Failed to play audio:", error);
-      }
+  // Toggle mute
+  const toggleMute = useCallback((e: React.MouseEvent | React.TouchEvent) => {
+    e.stopPropagation();
+    if (audioRef.current) {
+      audioRef.current.muted = !isMuted;
+      setIsMuted(!isMuted);
     }
-  };
+  }, [isMuted]);
 
   // Memoized version of handleComplete
   const handleComplete = useCallback(() => {
-    // Stop audio when completing
-    audioRef.pause();
-    audioRef.currentTime = 0;
+    if (isCompletedRef.current) return;
+    isCompletedRef.current = true;
+    
+    // Stop audio immediately and completely
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.src = '';
+      audioRef.current = null;
+    }
     
     setIsVisible(false);
     if (onComplete) {
-      setTimeout(onComplete, 500); // Delay matches fade-out duration
+      setTimeout(onComplete, 300);
     }
-  }, [onComplete, audioRef]);
+  }, [onComplete]);
 
   // Handle desktop loading bar progress and auto-completion
   useEffect(() => {
@@ -204,18 +215,30 @@ const SplashScreen = ({ onComplete }: SplashScreenProps) => {
 
   return (
     <div
-      className={`fixed inset-0 z-50 flex flex-col items-center justify-between bg-gradient-to-b from-background to-white px-6 py-12 transition-opacity duration-500 ${
-        isVisible ? "opacity-100" : "opacity-0 pointer-events-none" // Fade out and disable interaction when hidden
+      className={`fixed inset-0 z-50 flex flex-col items-center justify-between bg-gradient-to-b from-background to-white px-6 py-12 transition-opacity duration-300 ${
+        isVisible ? "opacity-100" : "opacity-0 pointer-events-none"
       }`}
-      onClick={handleScreenInteraction}
-      onTouchStart={handleScreenInteraction}
     >
+      {/* Mute Button */}
+      <button
+        onClick={toggleMute}
+        className="absolute top-4 right-4 z-10 p-2 rounded-full bg-primary/10 hover:bg-primary/20 transition-colors"
+        aria-label={isMuted ? "Unmute" : "Mute"}
+      >
+        {isMuted ? (
+          <VolumeX className="w-5 h-5 text-primary" />
+        ) : (
+          <Volume2 className="w-5 h-5 text-primary" />
+        )}
+      </button>
+
       {/* Top Section: Om Symbol Image */}
       <div className="flex-1 flex items-center justify-center pt-8">
         <img
-          src="/assets/O3m_AryaSamaj.png" // Use the Ohm image
+          src="/assets/O3m_AryaSamaj.png"
           alt="Ohm Symbol"
-          className="h-24 w-auto md:h-32" // Adjust size as needed
+          className="h-24 w-auto md:h-32"
+          loading="eager"
         />
       </div>
 
