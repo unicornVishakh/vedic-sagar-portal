@@ -18,7 +18,7 @@ const SplashScreen = ({ onComplete }: SplashScreenProps) => {
 
   // Initialize audio only once
   useEffect(() => {
-    const audio = new Audio("/assets/WhatsApp Video 2026-01-03 at 19.05.23.mp3");
+    const audio = new Audio("https://ugoimceidzwjytznhwig.supabase.co/storage/v1/object/public/assets/audio/public_assets_WhatsApp%20Video%202026-01-03%20at%2019.05.23.mp3
     audio.loop = true;
     audio.volume = 0.5;
     audioRef.current = audio;
