@@ -16,7 +16,7 @@ const MainPage = () => {
 
   // Auto-play background audio
   useEffect(() => {
-    const audio = new Audio("/assets/ancient-spirit-echoes-om-chanting-234045.mp3");
+    const audio = new Audio("https://ugoimceidzwjytznhwig.supabase.co/storage/v1/object/public/assets/audio/ancient-spirit-echoes-om-chanting-234045.mp3");
     audio.loop = true;
     audio.volume = 0.3;
     audioRef.current = audio;
