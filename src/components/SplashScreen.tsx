@@ -49,7 +49,7 @@ const SplashScreen = ({ onComplete }: SplashScreenProps) => {
     };
   }, []);
 
-  // Setup audio autoplay and visibility handling
+  // Setup audio autoplay - aggressive approach
   useEffect(() => {
     if (!audioRef.current || audioStarted) return;
     
@@ -58,31 +58,54 @@ const SplashScreen = ({ onComplete }: SplashScreenProps) => {
     const attemptPlay = async () => {
       if (isCompletedRef.current || document.hidden) return false;
       try {
+        // Try playing with sound first
         await audio.play();
         setAudioStarted(true);
         return true;
       } catch {
-        return false;
+        // If blocked, try muted first then unmute
+        try {
+          audio.muted = true;
+          await audio.play();
+          // Quickly unmute after starting
+          setTimeout(() => {
+            if (audioRef.current && !isCompletedRef.current) {
+              audioRef.current.muted = false;
+            }
+          }, 100);
+          setAudioStarted(true);
+          return true;
+        } catch {
+          return false;
+        }
       }
     };
     
+    // Try immediately
     attemptPlay();
     
+    // Try again when audio is ready
+    audio.addEventListener('canplaythrough', () => attemptPlay(), { once: true });
+    
+    // Also try on any interaction as fallback
     const handleInteraction = async () => {
       if (isCompletedRef.current) return;
       const success = await attemptPlay();
       if (success) {
         document.removeEventListener('click', handleInteraction);
         document.removeEventListener('touchstart', handleInteraction);
+        document.removeEventListener('touchmove', handleInteraction);
       }
     };
     
     document.addEventListener('click', handleInteraction, { passive: true });
     document.addEventListener('touchstart', handleInteraction, { passive: true });
+    document.addEventListener('touchmove', handleInteraction, { passive: true });
     
     return () => {
       document.removeEventListener('click', handleInteraction);
       document.removeEventListener('touchstart', handleInteraction);
+      document.removeEventListener('touchmove', handleInteraction);
     };
   }, [audioStarted]);
 
