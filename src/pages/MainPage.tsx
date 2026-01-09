@@ -14,24 +14,41 @@ const MainPage = () => {
   const [isMuted, setIsMuted] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  // Auto-play background audio
+  // Auto-play background audio - aggressive approach
   useEffect(() => {
     const audio = new Audio("https://ugoimceidzwjytznhwig.supabase.co/storage/v1/object/public/assets/audio/ancient-spirit-echoes-om-chanting-234045.mp3");
     audio.loop = true;
     audio.volume = 0.3;
     audioRef.current = audio;
 
-    const playAudio = () => {
-      if (!document.hidden) {
-        audio.play().catch(() => {});
+    const playAudio = async () => {
+      if (document.hidden || !audioRef.current) return;
+      try {
+        await audio.play();
+      } catch {
+        // If blocked, try muted first then unmute
+        try {
+          audio.muted = true;
+          await audio.play();
+          setTimeout(() => {
+            if (audioRef.current) {
+              audioRef.current.muted = false;
+            }
+          }, 100);
+        } catch {
+          // Silent fail
+        }
       }
     };
 
     // Try to play immediately
     playAudio();
+    
+    // Try again when audio is loaded
+    audio.addEventListener('canplaythrough', () => playAudio(), { once: true });
 
-    // Also try on user interaction
-    const events = ['click', 'touchstart', 'scroll', 'keydown'];
+    // Also try on user interaction as fallback
+    const events = ['click', 'touchstart', 'touchmove', 'scroll', 'keydown'];
     events.forEach(event => document.addEventListener(event, playAudio, { once: true }));
 
     // Pause when app is minimized or phone is locked
@@ -39,7 +56,7 @@ const MainPage = () => {
       if (document.hidden) {
         audio.pause();
       } else {
-        audio.play().catch(() => {});
+        playAudio();
       }
     };
     document.addEventListener('visibilitychange', handleVisibilityChange);
